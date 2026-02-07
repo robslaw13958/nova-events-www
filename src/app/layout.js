@@ -18,9 +18,21 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="pl">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {/* <Navigation /> */}
         {children}
+        <footer>
+          {/* <div className={styles.footerContent}> */}
+
+            <div>
+              <h3>Kontakt</h3>
+              <p>Tel. 889 446 126</p>
+              <p>Tel. 888 435 423</p>
+            </div>
+
+          {/* </div> */}
+        </footer>
       </body>
     </html>
   );
