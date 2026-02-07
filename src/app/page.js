@@ -1,15 +1,12 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 
-// Dodaj async tutaj ↓
 export default async function Home() {
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/112OyXCrzHvFSaZISEJJCIrQcq-Cs9t-4Nqr5dhtGfQE/export?format=csv";
 
   async function getPosts() {
     const response = await fetch(SHEET_URL);
     const text = await response.text();
-    console.log("CSV Text:", text);
-    console.log("Parsed Data:", parseCSVtoJSON(text));
     return parseCSVtoJSON(text);
   }
 
@@ -29,26 +26,87 @@ export default async function Home() {
     return data;
   }
 
-  // Dodaj await tutaj ↓
+  function groupProductsByVariant(products) {
+    const grouped = {};
+
+    products.forEach((product) => {
+      // Klucz grupujący: wszystko OPRÓCZ Kolor, Produkt (id), zdjęcie, Cena, dostępność, outlet
+      const key = `${product.Nazwa}_${product.Linia}_${product.Typ}_${product.sztaplowanie}_${product.wymiary}`;
+
+      if (!grouped[key]) {
+        // Pierwszy wariant - stworz bazowy obiekt
+        grouped[key] = {
+          Nazwa: product.Nazwa,
+          Linia: product.Linia,
+          Typ: product.Typ,
+          sztaplowanie: product.sztaplowanie,
+          wymiary: product.wymiary,
+          opis: product.opis,
+          warianty: [],
+        };
+      }
+
+      // Dodaj wariant do grupy
+      grouped[key].warianty.push({
+        id: product.Produkt,
+        kolor: product.Kolor,
+        cena: product.Cena,
+        zdjęcie: product.zdjęcie,
+        dostępność: product.dostępność,
+        outlet: product.outlet,
+      });
+    });
+
+    return Object.values(grouped);
+  }
+
   const posts = await getPosts();
+  const groupedProducts = groupProductsByVariant(posts);
 
   return (
     <div className={styles.page}>
       <div className={styles.offersContainer}>
-        {posts.map((offer, index) => (
-          <div key={index} className={styles.offerItem}>
-            <Image
-              src={offer.image || "https://picsum.photos/id/237/200/300"}
-              alt={offer.name || "Offer"}
-              width={240}
-              height={240}
-            />
-            <div className={styles.offerDescription}>
-              <h3>{offer.Produkt || "Offer"}</h3>
-              <p>{offer.Ilość || "Ilość"}</p>
+        {groupedProducts.map((product, index) => {
+          // Pierwszy wariant jako domyślny
+          const defaultVariant = product.warianty[0];
+
+          return (
+            <div key={index} className={styles.offerItem}>
+              {/* Badge outlet - pokazuj tylko jeśli pierwszy wariant to outlet */}
+              {defaultVariant.outlet === "Tak" && (
+                <div className={styles.outletBadge}>OUTLET</div>
+              )}
+
+              <Image
+                src={defaultVariant.zdjęcie || "https://ireland.apollo.olxcdn.com/v1/files/l7zo52pdwjm32-PL/image;s=1000x700"}
+                alt={product.Nazwa}
+                width={288}
+                height={240}
+                fill={false}
+                style={{ objectFit: 'cover' }}
+              />
+
+              <div className={styles.offerDescription}>
+                <p>{product.Nazwa}</p>
+                <p className={styles.price}>{defaultVariant.cena}</p>
+
+                {/* Kwadraciki wariantów - do zrobienia później */}
+                <div className={styles.variants}>
+                  {product.warianty.map((wariant, i) => (
+                    <div
+                      key={i}
+                      className={styles.variantBox}
+                      title={wariant.kolor}
+                    >
+                      {/* Tutaj będą kwadraciki kolorów */}
+                      {wariant.kolor.substring(0, 1)}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

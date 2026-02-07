@@ -8,7 +8,7 @@
 
   display: flex;
   align-self: center;
-  max-width: 1200px;
+  max-width: 1400px;
   flex: 1;
   align-items: center;
   justify-items: center;
@@ -35,12 +35,53 @@
 }
 
 .offerItem {
-  width: 240px;
-  height: 320px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  height: 400px;
   position: relative;
-  /* border: 1px solid red; */
   border-radius: 8px;
-  overflow: hidden;
+  padding: 16px;
+  font-size: 20px;
+}
+
+.outletBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4444;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.variants {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.variantBox {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.variantBox:hover {
+  border-color: #333;
 }
 
 /* .offerItem offerDes */
@@ -56,7 +97,11 @@
     --button-secondary-hover: #1a1a1a;
   }
 
-  
+  .offerItem {
+    /* no shadow */
+  box-shadow: none;
+  border: #aaa 2px solid;
+  }
 }
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {

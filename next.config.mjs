@@ -10,6 +10,13 @@ const nextConfig = {
         pathname: '/id/**',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'ireland.apollo.olxcdn.com',
+        port: '',
+        pathname: '/v1/files/**',
+        search: '',
+      },
     ],
   },
 };

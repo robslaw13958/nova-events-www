@@ -27,8 +27,7 @@ export default function RootLayout({ children }) {
 
             <div>
               <h3>Kontakt</h3>
-              <p>Tel. 889 446 126</p>
-              <p>Tel. 888 435 423</p>
+              <p>Tel. 000 000 000</p>
             </div>
 
           {/* </div> */}
