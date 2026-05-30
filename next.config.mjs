@@ -17,6 +17,13 @@ const nextConfig = {
         pathname: '/v1/files/**',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'mextra.pl',
+        port: '',
+        pathname: '/**',
+        search: '',
+      }
     ],
   },
 };

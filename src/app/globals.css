@@ -1,214 +1,77 @@
+/* ─── Zmienne tematyczne ─────────────────────────────────────────────────── */
 :root {
-  --background: #f3f2ed;
-  --foreground: #181b1a;
-  --dark-leading-color: #2e3338;
-  --light-leading-color: #576881;
+  --gold:        #C8A96E;
+  --gold-light:  #E2C98A;
+  --gold-dim:    rgba(200, 169, 110, 0.18);
+  --gold-border: rgba(200, 169, 110, 0.32);
+  --transition:  0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-serif:  var(--font-cormorant), 'Georgia', serif;
+  --font-sans:   var(--font-dm), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #181b1a;
-    --foreground: #dad7cd;
-    --dark-leading-color: #2e3138;
-    --light-leading-color: #576681;
-  }
+[data-theme='dark'] {
+  --bg:          #0E0E0D;
+  --bg2:         #161614;
+  --bg3:         #1E1E1B;
+  --surface:     #1A1A17;
+  --surface2:    #222220;
+  --border:      rgba(255, 255, 255, 0.07);
+  --text:        #F0EBE1;
+  --text-dim:    rgba(240, 235, 225, 0.42);
+  --text-mid:    rgba(240, 235, 225, 0.68);
+  --shadow:      rgba(0, 0, 0, 0.55);
+  --overlay-bg:  rgba(14, 14, 13, 0.88);
+  --tag-bg:      rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] {
+  --bg:          #F5F2EC;
+  --bg2:         #EDE9E1;
+  --bg3:         #E8E3D9;
+  --surface:     #FDFAF5;
+  --surface2:    #F0ECE4;
+  --border:      rgba(0, 0, 0, 0.08);
+  --text:        #1A1814;
+  --text-dim:    rgba(26, 24, 20, 0.40);
+  --text-mid:    rgba(26, 24, 20, 0.64);
+  --shadow:      rgba(0, 0, 0, 0.10);
+  --overlay-bg:  rgba(245, 242, 236, 0.92);
+  --tag-bg:      rgba(0, 0, 0, 0.04);
+}
+
+/* ─── Reset & base ───────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* border: 1px solid red; Debug */
 }
 
 html {
-  height: 100%;
-}
-
-html,
-body {
-  font-size: 1.2em;
-  max-width: 100vw;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
+  scroll-behavior: smooth;
+  font-size: 14px;
 }
 
 body {
-  height: 100%;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-cormorant), sans-serif;
-  font-weight: 300;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  transition: background var(--transition), color var(--transition);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  /* border: 1px solid red; */
-}
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar             { width: 5px; }
+::-webkit-scrollbar-track       { background: var(--bg); }
+::-webkit-scrollbar-thumb       { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-border); }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+/* ─── Utility ────────────────────────────────────────────────────────────── */
+button { cursor: pointer; font-family: var(--font-sans); }
+a      { text-decoration: none; }
 
-header {
-  /* background: var(--dark-leading-color); */
-  background-image: url('/drone/IMG-20250620-WA0026.jpg');
-  background-size: cover;
-  background-position: 50% 30% ;
-  color: #dad7cd;
-  display: flex;
-  flex-shrink: 0;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  gap: 10px;
-  padding: 20px;
-  text-shadow: #181b1a 0px 0px 10px;
-}
-
-header h1 {
-  backdrop-filter: blur(10px);
-  font-size: 2.5rem;
-  text-transform: uppercase;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-nav ul {
-  display: flex;
-  padding: 0;
-  backdrop-filter: blur(10px);
-  border-radius: 10px;
-  overflow: hidden;
-}
-nav ul li {
-  list-style: none;
-  font-weight: bold;
-  font-size: 1.2rem;
-  width: 100%;
-  white-space: nowrap;
-}
-nav ul li a {
-  display:block;
-  width: 100%;
-  cursor: pointer;
-  padding: 10px 20px;
-  text-align: center;
-
-}
-
-nav ul li a:hover {
-  border-radius: 5px;
-  text-shadow: #181b1a 0px 0px 5px;
-}
-
-footer {
-  background: var(--dark-leading-color);
-  color: #dad7cd;
-  width: 100%;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: center;
-  min-height: 220px;
-}
-
-footer > div {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  padding: 16px;
-  justify-content: space-between;
-  max-width: 1200px;
-}
-
-nav.nav-menu {
-  opacity: 1;
-}
-
-nav.nav-menu.open {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.navButton {
-  display: none;
-  transition: transform 0.3s ease-in-out;
-  position: absolute;
-  z-index: 1000;
-  top: 15px;  /* Lekko zwiększony odstęp od góry */
-  left: 15px; /* Lekko zwiększony odstęp od lewej */
-  background: var(--dark-leading-color);
-  padding: 15px;
-  border-radius: 15px;
-  cursor: pointer;
-  border: none;
-  color: #dad7cd; /* Dodajemy kolor ikony */
-}
-
-.navButton.open {
-  transform: rotate(90deg);
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
-
-
-@media (max-width: 824px) {
-  header {
-    min-height: 120px;
-    padding: 10px;
-    position: relative;
-  }
-
-  header h1 {
-    backdrop-filter: none;
-    margin-top: 40px; /* Dodajemy większy margines od góry */
-    margin-left: 15px;
-    margin-right: 15px;
-    font-size: 2rem; /* Zmniejszamy nieco rozmiar fonta na mobile */
-  }
-
-  footer > div {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  nav {
-    /* display: none; */
-    width: 75%;
-  }
-
-  .navButton {
-    display: block;
-  }
-  
-  nav ul {
-    flex-direction: column;
-    align-items: center;
-    backdrop-filter: none; /* usuń rozmycie tła */
-  }
-
-  nav.nav-menu {
-    position: fixed;
-    left: 0;
-    top: 0; /* Zmiana z 156px na 0 */
-    height: 100vh; /* Ustaw wysokość na całą wysokość viewportu */
-    background: var(--dark-leading-color);
-    padding: 20px;
-    padding-top: 80px; /* Dodaj padding na górze, aby menu nie zachodziło pod header */
-    transition: all 0.3s ease-in-out;
-    opacity: 0;
-    transform: translateX(-100%);
-    z-index: 999; /* Niższy niż przycisk, ale wyższy niż reszta contentu */
-  }
-
-  nav.nav-menu.open {
-    opacity: 1;
-    transform: translateX(0);
-  }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
