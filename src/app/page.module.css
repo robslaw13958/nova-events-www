@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   page.module.css — Elara Catalog
+   page.module.css
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Layout wrapper ─────────────────────────────────────────────────────── */
@@ -300,10 +300,12 @@
 
 /* ─── CATALOG ─────────────────────────────────────────────────────────────── */
 .catalog {
+  width: 100%;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 auto;          /* działa, bo width: 100% daje mu pełną szerokość rodzica */
   padding: 0 32px 80px;
   flex: 1;
+  box-sizing: border-box;  /* ważne – padding nie poszerza elementu ponad 100% */
 }
 
 .sortBar {
@@ -348,15 +350,18 @@
 .sortBtn:hover, .sortBtnActive { color: var(--gold); }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 400px);
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px; /* ten sam gap w pionie i poziomie */
 }
+
 
 /* ─── PRODUCT CARD ────────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
   position: relative;
+  width: 400px;
   overflow: hidden;
   transition: transform var(--transition), box-shadow var(--transition);
   animation: fadeUp 0.45s both;

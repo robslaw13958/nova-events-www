@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import s from './page.module.css';
+import Link from 'next/link';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function parseCena(cena = '') {
@@ -84,8 +85,15 @@ function ProductCard({ product }) {
             </p>
           )}
           <div className={s.overlayActions}>
-            <button className={s.btnPrimary}>Dodaj do koszyka</button>
-            <button className={s.btnGhost}>Szczegóły</button>
+            {/* <button className={s.btnPrimary}>Dodaj do koszyka</button> */}
+            {/* <button className={s.btnGhost}>Szczegóły</button> */}
+            <Link
+              href={`/${encodeURIComponent(product.id)}`}
+              className={s.btnPrimary}
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+            >
+              Szczegóły
+            </Link>
           </div>
         </div>
       </div>

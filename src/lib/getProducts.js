@@ -10,7 +10,7 @@
  *    NEXT_PUBLIC_SHEET_GID=0        (numer zakładki, domyślnie 0)
  */
 
-const SHEET_ID = process.env.NEXT_PUBLIC_SHEET_ID || 'TWOJ_SHEET_ID';
+const SHEET_ID = process.env.NEXT_PUBLIC_SHEET_ID || '112OyXCrzHvFSaZISEJJCIrQcq-Cs9t-4Nqr5dhtGfQE';
 const SHEET_GID = process.env.NEXT_PUBLIC_SHEET_GID || '0';
 
 const SHEETS_CSV_URL =
