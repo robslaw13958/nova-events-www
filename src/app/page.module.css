@@ -887,9 +887,21 @@
   .themeToggle  { display: none; } /* przeniesiony do drawer */
   .hamburger    { display: flex; }
 
-  /* Mobile menu */
-  .mobileMenuOverlay { display: block; }
-  .mobileMenu        { display: flex; }
+  /* Mobile menu – zawsze w DOM, ale pointer-events wyłączone gdy zamknięte */
+  .mobileMenuOverlay {
+    display: block;
+    pointer-events: none;
+  }
+  .mobileMenuOverlayOpen {
+    pointer-events: auto;
+  }
+  .mobileMenu {
+    display: flex;
+    pointer-events: none;
+  }
+  .mobileMenuOpen {
+    pointer-events: auto;
+  }
 
   /* Hero */
   .heroStrip {

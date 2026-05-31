@@ -72,10 +72,10 @@ function ProductCard({ product }) {
             </p>
           )}
           <div className={s.overlayActions}>
-            <button className={s.btnPrimary}>Dodaj do koszyka</button>
+            {/* <button className={s.btnPrimary}>Dodaj do koszyka</button> */}
             <Link
-              href={`/catalog/${encodeURIComponent(product.id)}`}
-              className={s.btnGhost}
+              href={`/${encodeURIComponent(product.id)}`}
+              className={s.btnPrimary}
             >
               Szczegóły
             </Link>
@@ -121,7 +121,7 @@ function ProductCard({ product }) {
 
       {/* Mobile – link szczegółów widoczny bez hovera */}
       <Link
-        href={`/catalog/${encodeURIComponent(product.id)}`}
+        href={`/${encodeURIComponent(product.id)}`}
         className={s.cardMobileLink}
         aria-label={`Szczegóły: ${product.name}`}
       >
