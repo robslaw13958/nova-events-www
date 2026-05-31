@@ -12,7 +12,8 @@
     "next": "^16.1.4",
     "node": "^24.16.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "eslint": "^9",
