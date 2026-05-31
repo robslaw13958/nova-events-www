@@ -1,18 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import s from './page.module.css';
 import Link from 'next/link';
+import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
-function parseCena(cena = '') {
-  // "90zł" → { label: "90", suffix: "zł" }
-  const match = cena.replace(/\s/g, '').match(/^([\d.,–\-]+)(.*)?$/);
-  if (!match) return { label: cena, suffix: '' };
-  return { label: match[1], suffix: match[2] || '' };
-}
-
 function dostepnoscClass(d = '') {
   const lower = d.toLowerCase();
   if (lower.includes('magazyn') || lower.includes('dostępn')) return s.dostepnoscDostepne;
@@ -30,13 +23,11 @@ function overlayDesc(p) {
   return parts.join(' · ') || p.typ;
 }
 
-/* ─── Placeholder SVG ────────────────────────────────────────────────────── */
-const ICONS = { 'krzesło': '📦', 'stół': '📦', 'ławka': '📦' };
-
+/* ─── Placeholder ────────────────────────────────────────────────────────── */
 function Placeholder({ typ }) {
   return (
     <div className={s.cardPlaceholder}>
-      <span className={s.placeholderIcon}>{ICONS[typ] ?? '📦'}</span>
+      <span className={s.placeholderIcon}>📦</span>
       <span className={s.placeholderText}>{typ}</span>
     </div>
   );
@@ -45,12 +36,10 @@ function Placeholder({ typ }) {
 /* ─── Single product card ────────────────────────────────────────────────── */
 function ProductCard({ product }) {
   const [activeVariant, setActiveVariant] = useState(0);
-  const { label: priceLabel } = parseCena(product.cena);
   const wariant = product.warianty[activeVariant];
 
   return (
     <article className={s.card}>
-      {/* Image */}
       <div className={s.cardImage}>
         {wariant.zdjecie ? (
           <Image
@@ -58,13 +47,12 @@ function ProductCard({ product }) {
             alt={product.name}
             fill
             className={s.cardImg}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 400px"
           />
         ) : (
           <Placeholder typ={product.typ} />
         )}
 
-        {/* Badges */}
         {wariant.outlet && (
           <span className={`${s.badge} ${s.badgeOutlet}`}>Outlet</span>
         )}
@@ -74,7 +62,6 @@ function ProductCard({ product }) {
           </span>
         )}
 
-        {/* Hover overlay */}
         <div className={s.cardOverlay}>
           <p className={s.overlayTitle}>{product.name}</p>
           <p className={s.overlayDesc}>{overlayDesc(product)}</p>
@@ -85,12 +72,10 @@ function ProductCard({ product }) {
             </p>
           )}
           <div className={s.overlayActions}>
-            {/* <button className={s.btnPrimary}>Dodaj do koszyka</button> */}
-            {/* <button className={s.btnGhost}>Szczegóły</button> */}
+            <button className={s.btnPrimary}>Dodaj do koszyka</button>
             <Link
-              href={`/${encodeURIComponent(product.id)}`}
-              className={s.btnPrimary}
-              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              href={`/catalog/${encodeURIComponent(product.id)}`}
+              className={s.btnGhost}
             >
               Szczegóły
             </Link>
@@ -98,7 +83,6 @@ function ProductCard({ product }) {
         </div>
       </div>
 
-      {/* Body */}
       <div className={s.cardBody}>
         <div className={s.productInfo}>
           <p className={s.cardCategory}>
@@ -107,7 +91,6 @@ function ProductCard({ product }) {
           <h2 className={s.cardName}>{product.name}</h2>
           {product.wymiary && <p className={s.cardSub}>{product.wymiary}</p>}
 
-          {/* Warianty kolorystyczne */}
           {product.warianty.length > 0 && (
             <div className={s.variants}>
               {product.warianty.map((w, i) => (
@@ -123,41 +106,63 @@ function ProductCard({ product }) {
             </div>
           )}
         </div>
-        {/* Price */}
+
         <div className={s.cardFooter}>
           <div className={s.priceWrapper}>
             <div className={s.price}>
               {wariant.cenaDetal}<span className={s.priceCurrency}> zł</span>
             </div>
-            {wariant.cenaDetal !== wariant.cenaHurt && <p className={s.priceNote}>Cena hurtowa: {wariant.cenaHurt} zł</p>}
+            {wariant.cenaDetal !== wariant.cenaHurt &&
+              <p className={s.priceNote}>Hurt: {wariant.cenaHurt} zł</p>
+            }
           </div>
-          {/* <button className={s.addBtn} aria-label="Dodaj do koszyka">+</button> */}
         </div>
       </div>
+
+      {/* Mobile – link szczegółów widoczny bez hovera */}
+      <Link
+        href={`/catalog/${encodeURIComponent(product.id)}`}
+        className={s.cardMobileLink}
+        aria-label={`Szczegóły: ${product.name}`}
+      >
+        Szczegóły →
+      </Link>
     </article>
   );
 }
 
 /* ─── Main client component ──────────────────────────────────────────────── */
 export default function CatalogClient({ products, filters }) {
-  // ── State filtrów ──
-  const [theme, setTheme] = useState('dark');
-  const [search, setSearch] = useState('');
-  const [activeTyp, setActiveTyp] = useState(''); // '' = wszystko
+  const [theme, setTheme]             = useState('dark');
+  const [menuOpen, setMenuOpen]       = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [search, setSearch]           = useState('');
+  const [activeTyp, setActiveTyp]     = useState('');
   const [activeLinia, setActiveLinia] = useState('');
   const [onlySkladane, setOnlySkladane] = useState(false);
-  const [onlySztapl, setOnlySztapl] = useState(false);
-  const [onlyOutlet, setOnlyOutlet] = useState(false);
-  const [sortBy, setSortBy] = useState('domyślny');
+  const [onlySztapl, setOnlySztapl]   = useState(false);
+  const [onlyOutlet, setOnlyOutlet]   = useState(false);
+  const [sortBy, setSortBy]           = useState('domyślny');
 
-  // ── Theme toggle ──
+  /* Zamknij menu przy resize do desktop */
+  useEffect(() => {
+    const handler = () => { if (window.innerWidth > 768) setMenuOpen(false); };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  /* Zablokuj scroll body gdy menu otwarte */
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   const toggleTheme = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     document.documentElement.dataset.theme = next;
   }, [theme]);
 
-  // ── Filtrowanie + sortowanie ──
   const visible = useMemo(() => {
     let list = products.filter(p => {
       if (activeTyp && p.typ !== activeTyp) return false;
@@ -174,16 +179,16 @@ export default function CatalogClient({ products, filters }) {
       return true;
     });
 
-    if (sortBy === 'cena ↑') {
-      list = [...list].sort((a, b) => a.cenaHurtNum - b.cenaHurtNum);
-    } else if (sortBy === 'cena ↓') {
-      list = [...list].sort((a, b) => b.cenaHurtNum - a.cenaHurtNum);
-    }
-
+    if (sortBy === 'cena ↑') list = [...list].sort((a, b) => a.cenaHurtNum - b.cenaHurtNum);
+    if (sortBy === 'cena ↓') list = [...list].sort((a, b) => b.cenaHurtNum - a.cenaHurtNum);
     return list;
   }, [products, activeTyp, activeLinia, onlySkladane, onlySztapl, onlyOutlet, search, sortBy]);
 
+  const activeFiltersCount = [activeTyp, activeLinia, onlySkladane, onlySztapl, onlyOutlet, search]
+    .filter(Boolean).length;
+
   const SORT_OPTIONS = ['domyślny', 'cena ↑', 'cena ↓'];
+  const NAV_LINKS = ['Katalog', 'Zamówienia hurtowe', 'O nas', 'Kontakt'];
 
   return (
     <div className={s.wrapper}>
@@ -195,24 +200,67 @@ export default function CatalogClient({ products, filters }) {
             <span className={s.logoName}>Nova Events</span>
             <span className={s.logoTag}>Wyposażenie Cateringowe</span>
           </div>
+
           <div className={s.headerRight}>
-            <nav>
+            {/* Desktop nav */}
+            <nav className={s.desktopNav}>
               <ul className={s.navLinks}>
-                <li><a href="#">Katalog</a></li>
-                <li><a href="#">Zamówienia hurtowe</a></li>
-                <li><a href="#">O nas</a></li>
-                <li><a href="#">Kontakt</a></li>
+                {NAV_LINKS.map(l => <li key={l}><a href="#">{l}</a></li>)}
               </ul>
             </nav>
+
             <button
               className={s.themeToggle}
               onClick={toggleTheme}
               aria-label="Zmień motyw"
             />
+
+            {/* Hamburger */}
+            <button
+              className={`${s.hamburger} ${menuOpen ? s.hamburgerOpen : ''}`}
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+            >
+              <span /><span /><span />
+            </button>
           </div>
         </div>
         <div className={s.goldLine} />
       </header>
+
+      {/* ── MOBILE MENU OVERLAY ── */}
+      <div
+        className={`${s.mobileMenuOverlay} ${menuOpen ? s.mobileMenuOverlayOpen : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* ── MOBILE MENU DRAWER ── */}
+      <nav className={`${s.mobileMenu} ${menuOpen ? s.mobileMenuOpen : ''}`} aria-label="Nawigacja mobilna">
+        <div className={s.mobileMenuHeader}>
+          <span className={s.mobileMenuLogo}>Nova Events</span>
+          <button
+            className={s.mobileMenuClose}
+            onClick={() => setMenuOpen(false)}
+            aria-label="Zamknij menu"
+          >
+            ✕
+          </button>
+        </div>
+        <ul className={s.mobileNavLinks}>
+          {NAV_LINKS.map(l => (
+            <li key={l}>
+              <a href="#" onClick={() => setMenuOpen(false)}>{l}</a>
+            </li>
+          ))}
+        </ul>
+        <div className={s.mobileMenuFooter}>
+          <button className={s.mobileThemeBtn} onClick={toggleTheme}>
+            {theme === 'dark' ? '☀ Jasny motyw' : '☾ Ciemny motyw'}
+          </button>
+        </div>
+      </nav>
 
       {/* ── HERO ── */}
       <div className={s.heroStrip}>
@@ -231,9 +279,24 @@ export default function CatalogClient({ products, filters }) {
 
       {/* ── FILTERS ── */}
       <div className={s.filterSection}>
-        <div className={s.filterBar}>
 
-          {/* Kategoria (Typ) — pills generowane dynamicznie */}
+        {/* Mobile filter toggle */}
+        <button
+          className={s.filterToggleBtn}
+          onClick={() => setFiltersOpen(o => !o)}
+          aria-expanded={filtersOpen}
+        >
+          <span>Filtry i wyszukiwanie</span>
+          {activeFiltersCount > 0 && (
+            <span className={s.filterBadge}>{activeFiltersCount}</span>
+          )}
+          <span className={`${s.filterToggleArrow} ${filtersOpen ? s.filterToggleArrowOpen : ''}`}>
+            ▾
+          </span>
+        </button>
+
+        <div className={`${s.filterBar} ${filtersOpen ? s.filterBarOpen : ''}`}>
+
           <div className={s.categoryGroup}>
             <span className={s.filterLabel}>Kategoria</span>
             <div className={s.pills}>
@@ -257,7 +320,6 @@ export default function CatalogClient({ products, filters }) {
 
           <div className={s.filterDivider} />
 
-          {/* Linia — select generowany dynamicznie */}
           <div className={s.filterGroup}>
             <label className={s.filterLabel} htmlFor="sel-linia">Linia</label>
             <select
@@ -275,32 +337,19 @@ export default function CatalogClient({ products, filters }) {
 
           <div className={s.filterDivider} />
 
-          {/* Cechy boolowskie */}
           <div className={s.toggleGroup}>
             <span className={s.filterLabel}>Cechy</span>
             <div className={s.toggles}>
               <label className={s.toggleLabel}>
-                <input
-                  type="checkbox"
-                  checked={onlySkladane}
-                  onChange={e => setOnlySkladane(e.target.checked)}
-                />
+                <input type="checkbox" checked={onlySkladane} onChange={e => setOnlySkladane(e.target.checked)} />
                 Składane
               </label>
               <label className={s.toggleLabel}>
-                <input
-                  type="checkbox"
-                  checked={onlySztapl}
-                  onChange={e => setOnlySztapl(e.target.checked)}
-                />
+                <input type="checkbox" checked={onlySztapl} onChange={e => setOnlySztapl(e.target.checked)} />
                 Sztaplowane
               </label>
               <label className={s.toggleLabel}>
-                <input
-                  type="checkbox"
-                  checked={onlyOutlet}
-                  onChange={e => setOnlyOutlet(e.target.checked)}
-                />
+                <input type="checkbox" checked={onlyOutlet} onChange={e => setOnlyOutlet(e.target.checked)} />
                 Outlet
               </label>
             </div>
@@ -308,7 +357,6 @@ export default function CatalogClient({ products, filters }) {
 
           <div className={s.filterDivider} />
 
-          {/* Szukaj */}
           <div className={s.searchGroup}>
             <label className={s.filterLabel} htmlFor="search">Szukaj</label>
             <input
@@ -324,11 +372,11 @@ export default function CatalogClient({ products, filters }) {
         </div>
       </div>
 
-      {/* ── CATALOG GRID ── */}
+      {/* ── CATALOG ── */}
       <main className={s.catalog}>
         <div className={s.sortBar}>
           <span className={s.sortMeta}>
-            Wyświetlono {visible.length} z {products.length} produktów
+            {visible.length} z {products.length} produktów
           </span>
           <div className={s.sortOptions}>
             <span className={s.sortLabel}>Sortuj:</span>
