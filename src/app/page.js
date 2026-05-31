@@ -7,5 +7,9 @@ export default async function Home() {
   const products = await getProducts();
   const filters  = buildFilters(products);
 
+  // print products list
+  console.log('Products:', products);
+  console.log('Filters:', filters);
+
   return <CatalogClient products={products} filters={filters} />;
 }

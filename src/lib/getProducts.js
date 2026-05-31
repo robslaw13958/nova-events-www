@@ -78,7 +78,7 @@ function groupProducts(rows) {
         linia: row['Linia'] || '',
         typ: row['Typ'] || '',
         skladanie: row['Składanie']?.toLowerCase() === 'true',
-        sztaplowanie: parseInt(row['sztaplowanie'] || '0', 10),
+        sztaplowanie: parseInt(row['Sztaplowanie'] || '0', 10),
         zestaw: row['Zestaw']?.toLowerCase() === 'true',
         opis: row['Opis'] || '',
         wymiary: row['Wymiary'] || '',

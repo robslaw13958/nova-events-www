@@ -834,37 +834,198 @@
 .emptySub   { font-size: 12px; margin-top: 6px; }
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
-.footer {
-  border-top: 1px solid var(--border);
-  padding: 28px 32px;
+.footerInner {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  padding: 48px 32px 32px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+  align-items: start;
 }
+
+.footerBrand { display: flex; flex-direction: column; gap: 12px; }
 
 .footerLogo {
   font-family: var(--font-serif);
-  font-size: 15px;
-  letter-spacing: 0.2em;
+  font-size: 18px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
-.footerNote {
+.footerTagline {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  max-width: 320px;
+}
+
+.footerContact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footerContactLabel {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.footerPhone {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.footerPhone:hover { color: var(--gold); }
+
+.footerMail {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.footerMail:hover { color: var(--gold); }
+
+.footerHours {
   font-size: 11px;
   color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.footerNav {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footerNav a {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
   letter-spacing: 0.06em;
+  transition: color var(--transition);
+}
+
+.footerNav a:hover { color: var(--gold); }
+
+.footerBottom {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 32px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .footerInner {
+    grid-template-columns: 1fr 1fr;
+    padding: 32px 16px 24px;
+    gap: 28px;
+  }
+
+  .footerBrand { grid-column: 1 / -1; }
+
+  .footerBottom { padding: 16px 16px 20px; }
+}
+
+@media (max-width: 480px) {
+  .footerInner { grid-template-columns: 1fr; }
 }
 
 /* ─── ANIMATIONS ─────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── LIGHTBOX ───────────────────────────────────────────────────────────── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.93);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lightboxImgWrap {
+  position: relative;
+  width: min(88vw, 88vh);
+  height: min(88vw, 88vh);
+  cursor: default;
+}
+
+.lightboxImg { object-fit: contain; }
+
+.lightboxClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255,255,255,0.8);
+  font-size: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.lightboxClose:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* Zoom button na karcie */
+.zoomBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255,255,255,0.85);
+  width: 30px;
+  height: 30px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.cardImage:hover .zoomBtn { opacity: 1; }
+.zoomBtn:hover { background: rgba(0, 0, 0, 0.75); }
+
+@media (max-width: 768px) {
+  .zoomBtn { opacity: 0.75; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

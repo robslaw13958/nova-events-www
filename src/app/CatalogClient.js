@@ -23,6 +23,38 @@ function overlayDesc(p) {
   return parts.join(' · ') || p.typ;
 }
 
+/* ─── Lightbox ───────────────────────────────────────────────────────────── */
+function Lightbox({ src, alt, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div className={s.lightbox} onClick={onClose}>
+      <button className={s.lightboxClose} onClick={onClose} aria-label="Zamknij">✕</button>
+      <div className={s.lightboxImgWrap} onClick={e => e.stopPropagation()}>
+        <Image src={src} alt={alt || ''} fill className={s.lightboxImg} sizes="100vw" />
+      </div>
+    </div>
+  );
+}
+
+const ZoomIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="11" cy="11" r="7" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <line x1="11" y1="8" x2="11" y2="14" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </svg>
+);
+
 /* ─── Placeholder ────────────────────────────────────────────────────────── */
 function Placeholder({ typ }) {
   return (
@@ -34,7 +66,7 @@ function Placeholder({ typ }) {
 }
 
 /* ─── Single product card ────────────────────────────────────────────────── */
-function ProductCard({ product }) {
+function ProductCard({ product, onZoom }) {
   const [activeVariant, setActiveVariant] = useState(0);
   const wariant = product.warianty[activeVariant];
 
@@ -56,11 +88,6 @@ function ProductCard({ product }) {
         {wariant.outlet && (
           <span className={`${s.badge} ${s.badgeOutlet}`}>Outlet</span>
         )}
-        {product.sztaplowanie > 0 && !wariant.outlet && (
-          <span className={`${s.badge} ${s.badgeSztapl}`}>
-            Szt. {product.sztaplowanie}×
-          </span>
-        )}
 
         <div className={s.cardOverlay}>
           <p className={s.overlayTitle}>{product.name}</p>
@@ -81,6 +108,15 @@ function ProductCard({ product }) {
             </Link>
           </div>
         </div>
+        {wariant.zdjecie && (
+          <button
+            className={s.zoomBtn}
+            onClick={e => { e.preventDefault(); e.stopPropagation(); onZoom(wariant.zdjecie, product.name); }}
+            aria-label="Powiększ zdjęcie"
+          >
+            <ZoomIcon />
+          </button>
+        )}
       </div>
 
       <div className={s.cardBody}>
@@ -133,16 +169,17 @@ function ProductCard({ product }) {
 
 /* ─── Main client component ──────────────────────────────────────────────── */
 export default function CatalogClient({ products, filters }) {
-  const [theme, setTheme]             = useState('dark');
-  const [menuOpen, setMenuOpen]       = useState(false);
+  const [theme, setTheme] = useState('dark');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [search, setSearch]           = useState('');
-  const [activeTyp, setActiveTyp]     = useState('');
+  const [search, setSearch] = useState('');
+  const [activeTyp, setActiveTyp] = useState('');
   const [activeLinia, setActiveLinia] = useState('');
   const [onlySkladane, setOnlySkladane] = useState(false);
-  const [onlySztapl, setOnlySztapl]   = useState(false);
-  const [onlyOutlet, setOnlyOutlet]   = useState(false);
-  const [sortBy, setSortBy]           = useState('domyślny');
+  const [onlySztapl, setOnlySztapl] = useState(false);
+  const [onlyOutlet, setOnlyOutlet] = useState(false);
+  const [sortBy, setSortBy] = useState('domyślny');
+  const [lightbox, setLightbox] = useState(null);
 
   /* Zamknij menu przy resize do desktop */
   useEffect(() => {
@@ -401,7 +438,11 @@ export default function CatalogClient({ products, filters }) {
             </div>
           ) : (
             visible.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onZoom={(src, alt) => setLightbox({ src, alt })}
+              />
             ))
           )}
         </div>
@@ -409,15 +450,45 @@ export default function CatalogClient({ products, filters }) {
 
       {/* ── FOOTER ── */}
       <footer>
-        <div className={s.goldLine} style={{ opacity: 0.2 }} />
-        <div className={s.footer}>
-          <span className={s.footerLogo}>Nova Events</span>
-          <span className={s.footerNote}>
-            © {new Date().getFullYear()} Nova Events · Sprzedaż hurtowa i detaliczna
-          </span>
-        </div>
-      </footer>
+  <div className={s.goldLine} style={{ opacity: 0.2 }} />
+  <div className={s.footerInner}>
 
+    <div className={s.footerBrand}>
+      <span className={s.footerLogo}>Nova Events</span>
+      <p className={s.footerTagline}>
+        Wyposażenie cateringowe na wynajem i sprzedaż hurtową.<br />
+        Obsługujemy eventy, wesela, konferencje i gastronomię.
+      </p>
+    </div>
+
+    <div className={s.footerContact}>
+      <p className={s.footerContactLabel}>Kontakt</p>
+      <a href="tel:+48123456789" className={s.footerPhone}>+48 123 456 789</a>
+      <a href="mailto:kontakt@novaevents.pl" className={s.footerMail}>
+        kontakt@novaevents.pl
+      </a>
+      <p className={s.footerHours}>Pn–Pt, 8:00–17:00</p>
+    </div>
+
+    <div className={s.footerContact}>
+      <p className={s.footerContactLabel}>Nawigacja</p>
+      <nav>
+        <ul className={s.footerNav}>
+          {['Katalog', 'Zamówienia hurtowe', 'O nas', 'Kontakt'].map(l => (
+            <li key={l}><a href="#">{l}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+  <div className={s.footerBottom}>
+    <span>© {new Date().getFullYear()} Nova Events · Sprzedaż hurtowa i detaliczna</span>
+  </div>
+</footer>
+      {lightbox && (
+        <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { getProducts } from '@/lib/getProducts';
 import Image from 'next/image';
+import VariantGrid from './VariantGrid';
 import s from './product.module.css';
 
 const LABELS = {
@@ -62,59 +63,11 @@ export default async function ProductPage({ params }) {
 
         {/* WARIANTY */}
         <section className={s.variantsSection}>
-          <h2 className={s.sectionTitle}>
-            Warianty
-            <span className={s.sectionCount}>({product.warianty.length})</span>
-          </h2>
-
-          <div className={s.variantGrid}>
-            {product.warianty.map((w, i) => (
-              <div key={i} className={s.variantCard}>
-
-                {w.zdjecie && (
-                  <div className={s.variantImage}>
-                    <Image
-                      src={w.zdjecie}
-                      alt={`${product.name} – ${w.kolor}`}
-                      fill
-                      className={s.variantImg}
-                      sizes="280px"
-                    />
-                  </div>
-                )}
-
-                <div className={s.variantBody}>
-                  <div className={s.variantHeader}>
-                    <span className={s.variantColorDot} style={{ background: w.hex }} />
-                    <span className={s.variantKolor}>{w.kolor || '—'}</span>
-                    {w.outlet && <span className={s.variantOutlet}>Outlet</span>}
-                  </div>
-
-                  <div className={s.variantRows}>
-                    <div className={s.variantRow}>
-                      <span className={s.variantRowLabel}>Cena detal</span>
-                      <span className={s.variantRowValue}>{w.cenaDetal || '—'} zł</span>
-                    </div>
-                    <div className={s.variantRow}>
-                      <span className={s.variantRowLabel}>Cena hurt</span>
-                      <span className={s.variantRowValue}>{w.cenaHurt || '—'} zł</span>
-                    </div>
-                    {w.dostepnosc && (
-                      <div className={s.variantRow}>
-                        <span className={s.variantRowLabel}>Dostępność</span>
-                        <span className={`${s.variantRowValue} ${s.variantDostepnosc}`}>
-                          <span className={`${s.dot} ${dostepnoscDot(w.dostepnosc)}`} />
-                          {w.dostepnosc}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-            ))}
-          </div>
-        </section>
+  <h2 className={s.sectionTitle}>
+    Warianty<span className={s.sectionCount}>({product.warianty.length})</span>
+  </h2>
+  <VariantGrid warianty={product.warianty} productName={product.name} />
+</section>
 
         {/* SZCZEGÓŁY */}
         <section className={s.detailsSection}>
