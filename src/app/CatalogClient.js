@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CartIcon, AddToCartModal, CartDrawer } from '@/components/Cart';
 import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -22,6 +23,7 @@ function overlayDesc(p) {
   if (p.opis) parts.push(p.opis);
   return parts.join(' · ') || p.typ;
 }
+
 
 /* ─── Lightbox ───────────────────────────────────────────────────────────── */
 function Lightbox({ src, alt, onClose }) {
@@ -66,7 +68,7 @@ function Placeholder({ typ }) {
 }
 
 /* ─── Single product card ────────────────────────────────────────────────── */
-function ProductCard({ product, onZoom }) {
+function ProductCard({ product, onAddToCart, onZoom }) {
   const [activeVariant, setActiveVariant] = useState(0);
   const wariant = product.warianty[activeVariant];
 
@@ -99,10 +101,15 @@ function ProductCard({ product, onZoom }) {
             </p>
           )}
           <div className={s.overlayActions}>
-            {/* <button className={s.btnPrimary}>Dodaj do koszyka</button> */}
+            <button
+              className={s.btnPrimary}
+              onClick={() => onAddToCart(product, activeVariant)}
+            >
+              Dodaj do koszyka
+            </button>
             <Link
               href={`/${encodeURIComponent(product.id)}`}
-              className={s.btnPrimary}
+              className={s.btnGhost}
             >
               Szczegóły
             </Link>
@@ -155,14 +162,21 @@ function ProductCard({ product, onZoom }) {
         </div>
       </div>
 
-      {/* Mobile – link szczegółów widoczny bez hovera */}
-      <Link
-        href={`/${encodeURIComponent(product.id)}`}
-        className={s.cardMobileLink}
-        aria-label={`Szczegóły: ${product.name}`}
-      >
-        Szczegóły →
-      </Link>
+      {/* Mobile – przyciski widoczne bez hovera */}
+      <div className={s.cardMobileActions}>
+        <button
+          className={s.cardMobileCart}
+          onClick={() => onAddToCart(product, activeVariant)}
+        >
+          + Dodaj
+        </button>
+        <Link
+          href={`/${encodeURIComponent(product.id)}`}
+          className={s.cardMobileLink}
+        >
+          Szczegóły →
+        </Link>
+      </div>
     </article>
   );
 }
@@ -179,16 +193,15 @@ export default function CatalogClient({ products, filters }) {
   const [onlySztapl, setOnlySztapl] = useState(false);
   const [onlyOutlet, setOnlyOutlet] = useState(false);
   const [sortBy, setSortBy] = useState('domyślny');
+  const [modal, setModal] = useState(null);
   const [lightbox, setLightbox] = useState(null);
 
-  /* Zamknij menu przy resize do desktop */
   useEffect(() => {
     const handler = () => { if (window.innerWidth > 768) setMenuOpen(false); };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  /* Zablokuj scroll body gdy menu otwarte */
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -199,6 +212,9 @@ export default function CatalogClient({ products, filters }) {
     setTheme(next);
     document.documentElement.dataset.theme = next;
   }, [theme]);
+
+  const openModal = useCallback((product, wariantIndex) => setModal({ product, wariantIndex }), []);
+  const closeModal = useCallback(() => setModal(null), []);
 
   const visible = useMemo(() => {
     let list = products.filter(p => {
@@ -230,29 +246,20 @@ export default function CatalogClient({ products, filters }) {
   return (
     <div className={s.wrapper}>
 
-      {/* ── HEADER ── */}
       <header className={s.header}>
         <div className={s.headerInner}>
           <div className={s.logo}>
             <span className={s.logoName}>Nova Events</span>
             <span className={s.logoTag}>Wyposażenie Cateringowe</span>
           </div>
-
           <div className={s.headerRight}>
-            {/* Desktop nav */}
             <nav className={s.desktopNav}>
               <ul className={s.navLinks}>
                 {NAV_LINKS.map(l => <li key={l}><a href="#">{l}</a></li>)}
               </ul>
             </nav>
-
-            <button
-              className={s.themeToggle}
-              onClick={toggleTheme}
-              aria-label="Zmień motyw"
-            />
-
-            {/* Hamburger */}
+            <CartIcon />
+            <button className={s.themeToggle} onClick={toggleTheme} aria-label="Zmień motyw" />
             <button
               className={`${s.hamburger} ${menuOpen ? s.hamburgerOpen : ''}`}
               onClick={() => setMenuOpen(o => !o)}
@@ -266,30 +273,20 @@ export default function CatalogClient({ products, filters }) {
         <div className={s.goldLine} />
       </header>
 
-      {/* ── MOBILE MENU OVERLAY ── */}
       <div
         className={`${s.mobileMenuOverlay} ${menuOpen ? s.mobileMenuOverlayOpen : ''}`}
         onClick={() => setMenuOpen(false)}
         aria-hidden="true"
       />
 
-      {/* ── MOBILE MENU DRAWER ── */}
-      <nav className={`${s.mobileMenu} ${menuOpen ? s.mobileMenuOpen : ''}`} aria-label="Nawigacja mobilna">
+      <nav className={`${s.mobileMenu} ${menuOpen ? s.mobileMenuOpen : ''}`}>
         <div className={s.mobileMenuHeader}>
           <span className={s.mobileMenuLogo}>Nova Events</span>
-          <button
-            className={s.mobileMenuClose}
-            onClick={() => setMenuOpen(false)}
-            aria-label="Zamknij menu"
-          >
-            ✕
-          </button>
+          <button className={s.mobileMenuClose} onClick={() => setMenuOpen(false)}>✕</button>
         </div>
         <ul className={s.mobileNavLinks}>
           {NAV_LINKS.map(l => (
-            <li key={l}>
-              <a href="#" onClick={() => setMenuOpen(false)}>{l}</a>
-            </li>
+            <li key={l}><a href="#" onClick={() => setMenuOpen(false)}>{l}</a></li>
           ))}
         </ul>
         <div className={s.mobileMenuFooter}>
@@ -299,7 +296,6 @@ export default function CatalogClient({ products, filters }) {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
       <div className={s.heroStrip}>
         <h1 className={s.heroTitle}>
           Wyposażenie<br />na <em>każde wydarzenie</em>
@@ -314,10 +310,7 @@ export default function CatalogClient({ products, filters }) {
         </div>
       </div>
 
-      {/* ── FILTERS ── */}
       <div className={s.filterSection}>
-
-        {/* Mobile filter toggle */}
         <button
           className={s.filterToggleBtn}
           onClick={() => setFiltersOpen(o => !o)}
@@ -327,20 +320,14 @@ export default function CatalogClient({ products, filters }) {
           {activeFiltersCount > 0 && (
             <span className={s.filterBadge}>{activeFiltersCount}</span>
           )}
-          <span className={`${s.filterToggleArrow} ${filtersOpen ? s.filterToggleArrowOpen : ''}`}>
-            ▾
-          </span>
+          <span className={`${s.filterToggleArrow} ${filtersOpen ? s.filterToggleArrowOpen : ''}`}>▾</span>
         </button>
 
         <div className={`${s.filterBar} ${filtersOpen ? s.filterBarOpen : ''}`}>
-
           <div className={s.categoryGroup}>
             <span className={s.filterLabel}>Kategoria</span>
             <div className={s.pills}>
-              <button
-                className={`${s.pill} ${activeTyp === '' ? s.active : ''}`}
-                onClick={() => setActiveTyp('')}
-              >
+              <button className={`${s.pill} ${activeTyp === '' ? s.active : ''}`} onClick={() => setActiveTyp('')}>
                 Wszystko
               </button>
               {filters.typy.map(typ => (
@@ -354,26 +341,15 @@ export default function CatalogClient({ products, filters }) {
               ))}
             </div>
           </div>
-
           <div className={s.filterDivider} />
-
           <div className={s.filterGroup}>
             <label className={s.filterLabel} htmlFor="sel-linia">Linia</label>
-            <select
-              id="sel-linia"
-              className={s.filterSelect}
-              value={activeLinia}
-              onChange={e => setActiveLinia(e.target.value)}
-            >
+            <select id="sel-linia" className={s.filterSelect} value={activeLinia} onChange={e => setActiveLinia(e.target.value)}>
               <option value="">Wszystkie</option>
-              {filters.linie.map(l => (
-                <option key={l} value={l}>{l}</option>
-              ))}
+              {filters.linie.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
-
           <div className={s.filterDivider} />
-
           <div className={s.toggleGroup}>
             <span className={s.filterLabel}>Cechy</span>
             <div className={s.toggles}>
@@ -391,9 +367,7 @@ export default function CatalogClient({ products, filters }) {
               </label>
             </div>
           </div>
-
           <div className={s.filterDivider} />
-
           <div className={s.searchGroup}>
             <label className={s.filterLabel} htmlFor="search">Szukaj</label>
             <input
@@ -405,16 +379,12 @@ export default function CatalogClient({ products, filters }) {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-
         </div>
       </div>
 
-      {/* ── CATALOG ── */}
       <main className={s.catalog}>
         <div className={s.sortBar}>
-          <span className={s.sortMeta}>
-            {visible.length} z {products.length} produktów
-          </span>
+          <span className={s.sortMeta}>{visible.length} z {products.length} produktów</span>
           <div className={s.sortOptions}>
             <span className={s.sortLabel}>Sortuj:</span>
             {SORT_OPTIONS.map(opt => (
@@ -438,57 +408,55 @@ export default function CatalogClient({ products, filters }) {
             </div>
           ) : (
             visible.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onZoom={(src, alt) => setLightbox({ src, alt })}
-              />
+              <ProductCard key={product.id} product={product} onAddToCart={openModal} onZoom={(src, alt) => setLightbox({ src, alt })}/>
             ))
           )}
         </div>
       </main>
 
-      {/* ── FOOTER ── */}
       <footer>
-  <div className={s.goldLine} style={{ opacity: 0.2 }} />
-  <div className={s.footerInner}>
+        <div className={s.goldLine} style={{ opacity: 0.2 }} />
+        <div className={s.footerInner}>
+          <div className={s.footerBrand}>
+            <span className={s.footerLogo}>Nova Events</span>
+            <p className={s.footerTagline}>
+              Wyposażenie cateringowe na wynajem i sprzedaż hurtową.<br />
+              Obsługujemy eventy, wesela, konferencje i gastronomię.
+            </p>
+          </div>
+          <div className={s.footerContact}>
+            <p className={s.footerContactLabel}>Kontakt</p>
+            <a href="tel:+48123456789" className={s.footerPhone}>+48 123 456 789</a>
+            <a href="mailto:kontakt@novaevents.pl" className={s.footerMail}>kontakt@novaevents.pl</a>
+            <p className={s.footerHours}>Pn–Pt, 8:00–17:00</p>
+          </div>
+          <div className={s.footerContact}>
+            <p className={s.footerContactLabel}>Nawigacja</p>
+            <nav>
+              <ul className={s.footerNav}>
+                {NAV_LINKS.map(l => <li key={l}><a href="#">{l}</a></li>)}
+              </ul>
+            </nav>
+          </div>
+        </div>
+        <div className={s.footerBottom}>
+          <span>© {new Date().getFullYear()} Nova Events · Sprzedaż hurtowa i detaliczna</span>
+        </div>
+      </footer>
 
-    <div className={s.footerBrand}>
-      <span className={s.footerLogo}>Nova Events</span>
-      <p className={s.footerTagline}>
-        Wyposażenie cateringowe na wynajem i sprzedaż hurtową.<br />
-        Obsługujemy eventy, wesela, konferencje i gastronomię.
-      </p>
-    </div>
+      <CartDrawer />
+      {modal && (
+        <AddToCartModal
+          product={modal.product}
+          wariantIndex={modal.wariantIndex}
+          onClose={closeModal}
+        />
+      )}
 
-    <div className={s.footerContact}>
-      <p className={s.footerContactLabel}>Kontakt</p>
-      <a href="tel:+48123456789" className={s.footerPhone}>+48 123 456 789</a>
-      <a href="mailto:kontakt@novaevents.pl" className={s.footerMail}>
-        kontakt@novaevents.pl
-      </a>
-      <p className={s.footerHours}>Pn–Pt, 8:00–17:00</p>
-    </div>
-
-    <div className={s.footerContact}>
-      <p className={s.footerContactLabel}>Nawigacja</p>
-      <nav>
-        <ul className={s.footerNav}>
-          {['Katalog', 'Zamówienia hurtowe', 'O nas', 'Kontakt'].map(l => (
-            <li key={l}><a href="#">{l}</a></li>
-          ))}
-        </ul>
-      </nav>
-    </div>
-
-  </div>
-  <div className={s.footerBottom}>
-    <span>© {new Date().getFullYear()} Nova Events · Sprzedaż hurtowa i detaliczna</span>
-  </div>
-</footer>
       {lightbox && (
         <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
       )}
+
     </div>
   );
 }
