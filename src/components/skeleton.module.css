@@ -1,0 +1,89 @@
+/* skeleton.module.css */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    color-mix(in srgb, var(--surface) 80%, var(--gold) 20%) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 2px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+}
+
+.mainContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 48px 32px 80px;
+  flex: 1;
+}
+
+.heroSection {
+  margin-bottom: 48px;
+}
+
+.variantsSection {
+  margin-bottom: 56px;
+}
+
+.variantGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.variantCardSkeleton {
+  flex: 1 1 220px;
+  max-width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 2px;
+}
+
+.detailsSection {
+  margin-bottom: 56px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 24px;
+}
+
+.detailRow:first-child {
+  border-top: 1px solid var(--border);
+}

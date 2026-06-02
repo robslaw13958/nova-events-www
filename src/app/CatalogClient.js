@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CartIcon, AddToCartModal, CartDrawer } from '@/components/Cart';
+import { useTheme } from '@/lib/themeStore';
 import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -183,7 +184,7 @@ function ProductCard({ product, onAddToCart, onZoom }) {
 
 /* ─── Main client component ──────────────────────────────────────────────── */
 export default function CatalogClient({ products, filters }) {
-  const [theme, setTheme] = useState('dark');
+  const { theme, initTheme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -197,6 +198,10 @@ export default function CatalogClient({ products, filters }) {
   const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
+    initTheme();
+  }, [initTheme]);
+
+  useEffect(() => {
     const handler = () => { if (window.innerWidth > 768) setMenuOpen(false); };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
@@ -206,12 +211,6 @@ export default function CatalogClient({ products, filters }) {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
-
-  const toggleTheme = useCallback(() => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-  }, [theme]);
 
   const openModal = useCallback((product, wariantIndex) => setModal({ product, wariantIndex }), []);
   const closeModal = useCallback(() => setModal(null), []);

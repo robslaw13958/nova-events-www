@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, use, useCallback } from 'react';
+import { useState, useEffect, use } from 'react';
 import Image from 'next/image';
 import { AddToCartModal, CartDrawer, CartIcon } from '@/components/Cart';
+import { useTheme } from '@/lib/themeStore';
+import { ProductSkeletonPage } from '@/components/Skeleton';
 import VariantGrid from './VariantGrid';
 import s from './product.module.css';
 import { getProducts } from '@/lib/getProducts';
@@ -38,9 +40,14 @@ function FieldValue({ value }) {
 
 export default function ProductPage({ params }) {
   const { id } = use(params);
+  const { theme, initTheme, toggleTheme } = useTheme();
   const [product, setProduct] = useState(null);
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -60,18 +67,9 @@ export default function ProductPage({ params }) {
 
   const openModal = (wariantIndex) => setModal({ product, wariantIndex });
   const closeModal = () => setModal(null);
-  const toggleTheme = useCallback(() => {
-    const current = document.documentElement.dataset.theme || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
-  }, []);
 
   if (loading) {
-    return (
-      <div style={{ padding: 64, textAlign: 'center', fontFamily: 'var(--font-serif)', color: 'var(--text-dim)' }}>
-        Ładowanie…
-      </div>
-    );
+    return <ProductSkeletonPage />;
   }
 
   if (!product) {

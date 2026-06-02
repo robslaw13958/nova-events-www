@@ -24,6 +24,21 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pl" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const saved = localStorage.getItem('theme-preference');
+                  const theme = saved || 'dark';
+                  document.documentElement.dataset.theme = theme;
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${cormorant.variable} ${dmSans.variable}`}>
         {children}
       </body>
