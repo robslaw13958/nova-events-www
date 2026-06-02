@@ -42,7 +42,7 @@ function dostepnoscDot(d = '') {
   return s.dotWkrotce;
 }
 
-export default function VariantGrid({ warianty, productName }) {
+export default function VariantGrid({ warianty, productName, onAddToCart }) {
   const [lightbox, setLightbox] = useState(null);
 
   return (
@@ -94,6 +94,14 @@ export default function VariantGrid({ warianty, productName }) {
                   </div>
                 )}
               </div>
+              {onAddToCart && (
+                <button
+                  className={s.variantAddBtn}
+                  onClick={() => onAddToCart(i)}
+                >
+                  + Dodaj do koszyka
+                </button>
+              )}
             </div>
           </div>
         ))}

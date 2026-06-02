@@ -8,6 +8,80 @@
   flex-direction: column;
 }
 
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.headerInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLogo {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.headerLogo:hover {
+  color: var(--gold);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.themeToggle {
+  width: 44px;
+  height: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--transition);
+  cursor: pointer;
+}
+
+.themeToggle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--bg);
+  top: 2px;
+  left: 2px;
+  transition: left var(--transition);
+}
+
+[data-theme="light"] .themeToggle {
+  background: var(--gold);
+}
+
+[data-theme="light"] .themeToggle::after {
+  left: 22px;
+}
+
 .main {
   max-width: 1400px;
   margin: 0 auto;
@@ -176,6 +250,26 @@
 .dotDostepne { background: #4CAF50; }
 .dotOstatnie { background: var(--gold); }
 .dotWkrotce  { background: #888; }
+
+.variantAddBtn {
+  width: 100%;
+  background: var(--gold);
+  color: #0E0E0D;
+  border: none;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background var(--transition);
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.variantAddBtn:hover {
+  background: var(--gold-light);
+}
 
 /* ─── SZCZEGÓŁY ──────────────────────────────────────────────────────────── */
 .detailsSection { margin-bottom: 56px; }

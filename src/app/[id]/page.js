@@ -1,7 +1,11 @@
-import { getProducts } from '@/lib/getProducts';
+'use client';
+
+import { useState, useEffect, use, useCallback } from 'react';
 import Image from 'next/image';
+import { AddToCartModal, CartDrawer, CartIcon } from '@/components/Cart';
 import VariantGrid from './VariantGrid';
 import s from './product.module.css';
+import { getProducts } from '@/lib/getProducts';
 
 const LABELS = {
   linia:        'Linia',
@@ -32,10 +36,43 @@ function FieldValue({ value }) {
   return <span>{value}</span>;
 }
 
-export default async function ProductPage({ params }) {
-  const { id } = await params;
-  const products = await getProducts();
-  const product = products.find(p => p.id === decodeURIComponent(id));
+export default function ProductPage({ params }) {
+  const { id } = use(params);
+  const [product, setProduct] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        const products = await getProducts();
+        const found = products.find(p => p.id === decodeURIComponent(id));
+        setProduct(found || null);
+      } catch (error) {
+        console.error('Failed to load product:', error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProduct();
+  }, [id]);
+
+  const openModal = (wariantIndex) => setModal({ product, wariantIndex });
+  const closeModal = () => setModal(null);
+  const toggleTheme = useCallback(() => {
+    const current = document.documentElement.dataset.theme || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: 64, textAlign: 'center', fontFamily: 'var(--font-serif)', color: 'var(--text-dim)' }}>
+        Ładowanie…
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -47,6 +84,16 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className={s.wrapper}>
+      <header className={s.header}>
+        <div className={s.headerInner}>
+          <a href="/" className={s.headerLogo}>Nova Events</a>
+          <div className={s.headerRight}>
+            <CartIcon />
+            <button className={s.themeToggle} onClick={toggleTheme} aria-label="Zmień motyw" />
+          </div>
+        </div>
+      </header>
+
       <main className={s.main}>
 
         <a href="/" className={s.backLink}>← Wróć do katalogu</a>
@@ -66,7 +113,7 @@ export default async function ProductPage({ params }) {
   <h2 className={s.sectionTitle}>
     Warianty<span className={s.sectionCount}>({product.warianty.length})</span>
   </h2>
-  <VariantGrid warianty={product.warianty} productName={product.name} />
+  <VariantGrid warianty={product.warianty} productName={product.name} onAddToCart={openModal} />
 </section>
 
         {/* SZCZEGÓŁY */}
@@ -88,6 +135,15 @@ export default async function ProductPage({ params }) {
         </section>
 
       </main>
+
+      <CartDrawer />
+      {modal && (
+        <AddToCartModal
+          product={modal.product}
+          wariantIndex={modal.wariantIndex}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 }
