@@ -1176,6 +1176,10 @@
   opacity: 1;
 }
 
+.cardMobileActions {
+  display: none;
+}
+
 .zoomBtn:hover {
   background: rgba(0, 0, 0, 0.75);
 }
