@@ -43,7 +43,7 @@ export default function KontaktPage() {
           <h2 className={st.sectionTitle}>Zamówienia hurtowe</h2>
           <p>
             W sprawie większych zamówień i cen hurtowych zajrzyj też na stronę{' '}
-            <Link href="/zamowienia-hurtowe">Zamówienia hurtowe</Link> lub napisz bezpośrednio na adres powyżej.
+            <Link href="/zamowienia-hurtowe" className={st.inlineLink}>Zamówienia hurtowe</Link> lub napisz bezpośrednio na adres powyżej.
           </p>
         </div>
       </div>

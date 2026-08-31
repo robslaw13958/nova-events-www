@@ -112,6 +112,17 @@
   margin-top: 24px;
 }
 
+.inlineLink {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition);
+}
+
+.inlineLink:hover {
+  color: var(--gold-light);
+}
+
 .note {
   font-size: 12px;
   color: var(--text-dim);

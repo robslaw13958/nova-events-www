@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { AddToCartModal, CartDrawer, CartIcon } from '@/components/Cart';
-import { useTheme } from '@/lib/themeStore';
+import { AddToCartModal } from '@/components/Cart';
+import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 import VariantGrid from './VariantGrid';
 import s from './product.module.css';
 
@@ -30,27 +31,14 @@ function FieldValue({ value }) {
 }
 
 export default function ProductPageClient({ product }) {
-  const { theme, initTheme, toggleTheme } = useTheme();
   const [modal, setModal] = useState(null);
-
-  useEffect(() => {
-    initTheme();
-  }, [initTheme]);
 
   const openModal = (wariantIndex) => setModal({ product, wariantIndex });
   const closeModal = () => setModal(null);
 
   return (
     <div className={s.wrapper}>
-      <header className={s.header}>
-        <div className={s.headerInner}>
-          <Link href="/" className={s.headerLogo}>Nova Events</Link>
-          <div className={s.headerRight}>
-            <CartIcon />
-            <button className={s.themeToggle} onClick={toggleTheme} aria-label="Zmień motyw" />
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className={s.main}>
 
@@ -94,7 +82,8 @@ export default function ProductPageClient({ product }) {
 
       </main>
 
-      <CartDrawer />
+      <SiteFooter />
+
       {modal && (
         <AddToCartModal
           product={modal.product}

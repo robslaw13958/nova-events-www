@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { AddToCartModal, CartDrawer } from '@/components/Cart';
+import { AddToCartModal } from '@/components/Cart';
 import { Lightbox, ZoomIcon } from '@/components/Lightbox';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
@@ -353,7 +353,6 @@ export default function CatalogClient({ products, filters }) {
 
       <SiteFooter />
 
-      <CartDrawer />
       {modal && (
         <AddToCartModal
           product={modal.product}

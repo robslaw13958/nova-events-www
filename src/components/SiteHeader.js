@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CartIcon } from '@/components/Cart';
+import { CartIcon, CartDrawer } from '@/components/Cart';
 import { useTheme } from '@/lib/themeStore';
 import { NAV_LINKS } from '@/lib/navLinks';
 import s from '@/app/page.module.css';
@@ -87,6 +87,8 @@ export default function SiteHeader() {
           </button>
         </div>
       </nav>
+
+      <CartDrawer />
     </>
   );
 }
