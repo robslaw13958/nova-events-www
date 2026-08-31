@@ -379,6 +379,38 @@
   transform: rotate(180deg);
 }
 
+.filterBarHeader {
+  flex: 0 0 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterClearBtn {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold-border);
+  padding: 7px 14px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: all var(--transition);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filterClearBtn:hover:not(:disabled) {
+  background: var(--gold);
+  color: #0E0E0D;
+  border-color: var(--gold);
+}
+
+.filterClearBtn:disabled {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .filterBar {
   background: var(--surface);
   border: 1px solid var(--border);

@@ -10,6 +10,8 @@
  *    NEXT_PUBLIC_SHEET_GID=0        (numer zakładki, domyślnie 0)
  */
 
+import Papa from 'papaparse';
+
 const SHEET_ID = process.env.NEXT_PUBLIC_SHEET_ID || '112OyXCrzHvFSaZISEJJCIrQcq-Cs9t-4Nqr5dhtGfQE';
 const SHEET_GID = process.env.NEXT_PUBLIC_SHEET_GID || '0';
 
@@ -39,29 +41,38 @@ export function colorToHex(name = '') {
   return COLOR_MAP[name.toLowerCase().trim()] ?? '#888888';
 }
 
-// ─── Parser CSV (obsługuje cudzysłowy) ────────────────────────────────────────
+// ─── Parser CSV ────────────────────────────────────────────────────────────
 function parseCsv(text) {
-  const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-
-  return lines.slice(1).map(line => {
-    const values = [];
-    let cur = '';
-    let inQ = false;
-    for (const ch of line) {
-      if (ch === '"') { inQ = !inQ; continue; }
-      if (ch === ',' && !inQ) { values.push(cur.trim()); cur = ''; continue; }
-      cur += ch;
-    }
-    values.push(cur.trim());
-
-    return Object.fromEntries(headers.map((h, i) => [h, values[i] ?? '']));
+  const { data } = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+    transform: (v) => (typeof v === 'string' ? v.trim() : v),
   });
+  return data;
 }
 
 // Parsowanie ceny "90,00" → 90
 function parseCenaFloat(raw = '') {
   return parseFloat(raw.replace(',', '.')) || 0;
+}
+
+// ─── Pola wyłączone z automatycznych filtrów (patrz lib/autoFilters.js) ────────
+// Struktura/identyfikacja produktu, nie kategoria — nie ma sensu ich filtrować.
+const NON_FILTERABLE_FIELDS = new Set([
+  'ID', 'Produkt', 'Nazwa', 'Zdjęcie', 'Cena Hurt [zł]', 'Cena Detal [zł]',
+]);
+
+// Zbiera surowe wartości WSZYSTKICH pozostałych kolumn arkusza dla danego produktu,
+// żeby filtry mogły powstawać automatycznie z dowolnej kolumny, bez zmian w kodzie.
+function collectFields(target, row) {
+  for (const [header, rawValue] of Object.entries(row)) {
+    if (NON_FILTERABLE_FIELDS.has(header)) continue;
+    const value = (rawValue ?? '').toString().trim();
+    if (!value) continue;
+    if (!target[header]) target[header] = [];
+    if (!target[header].includes(value)) target[header].push(value);
+  }
 }
 
 // ─── Grupowanie wierszy → produkty z wariantami ────────────────────────────────
@@ -83,10 +94,12 @@ function groupProducts(rows) {
         opis: row['Opis'] || '',
         wymiary: row['Wymiary'] || '',
         warianty: [],
+        fields: {},
       });
     }
 
     const produkt = map.get(key);
+    collectFields(produkt.fields, row);
 
     produkt.warianty.push({
       kolor: row['Kolor'] || '',
@@ -113,14 +126,6 @@ function groupProducts(rows) {
   return Array.from(map.values());
 }
 
-// ─── Ekstrakcja opcji filtrów ─────────────────────────────────────────────────
-export function buildFilters(products) {
-  const typy = [...new Set(products.map(p => p.typ).filter(Boolean))].sort();
-  const linie = [...new Set(products.map(p => p.linia).filter(Boolean))].sort();
-
-  return { typy, linie };
-}
-
 // ─── Główna funkcja eksportowana ──────────────────────────────────────────────
 export async function getProducts() {
   try {
@@ -137,10 +142,10 @@ export async function getProducts() {
 
 // ─── Dane zastępcze (gdy arkusz niedostępny) ───────────────────────────────────
 const FALLBACK_PRODUCTS = groupProducts([
-  { ID: '1', Produkt: 'Krzesło bankietowe_PREMIUM_krzesło_18_', Nazwa: 'Krzesło bankietowe', Cena: '90zł', Kolor: 'Granatowy', Linia: 'PREMIUM', Typ: 'krzesło', sztaplowanie: '18', Składanie: 'FALSE', Outlet: 'TRUE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Ostatnie sztuki' },
-  { ID: '2', Produkt: 'Krzesło bankietowe_PREMIUM_krzesło_18_', Nazwa: 'Krzesło bankietowe', Cena: '90zł', Kolor: 'Bordowy', Linia: 'PREMIUM', Typ: 'krzesło', sztaplowanie: '18', Składanie: 'FALSE', Outlet: 'TRUE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Ostatnie sztuki' },
-  { ID: '4', Produkt: 'Krzesło cateringowe_CLASSIC_krzesło_SK_0_', Nazwa: 'Krzesło cateringowe', Cena: '45zł', Kolor: 'Czarny', Linia: 'CLASSIC', Typ: 'krzesło', sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
-  { ID: '10', Produkt: 'Stół cateringowy__stół_SK_0_A', Nazwa: 'Stół cateringowy', Cena: '150zł', Kolor: 'Czarny', Linia: '', Typ: 'stół', sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
-  { ID: '11', Produkt: 'Stół cateringowy__stół_SK_0_A', Nazwa: 'Stół cateringowy', Cena: '150zł', Kolor: 'Biały', Linia: '', Typ: 'stół', sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
-  { ID: '20', Produkt: 'Krzesło Chiavari__krzesło_10_', Nazwa: 'Krzesło Chiavari', Cena: '120zł', Kolor: 'Złoty', Linia: '', Typ: 'krzesło', sztaplowanie: '10', Składanie: 'FALSE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Wkrótce dostępne' },
+  { ID: '1', Produkt: 'Krzesło bankietowe_PREMIUM_krzesło_18_', Nazwa: 'Krzesło bankietowe', Kolor: 'Granatowy', Linia: 'PREMIUM', Typ: 'krzesło', Sztaplowanie: '18', Składanie: 'FALSE', Outlet: 'TRUE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Ostatnie sztuki' },
+  { ID: '2', Produkt: 'Krzesło bankietowe_PREMIUM_krzesło_18_', Nazwa: 'Krzesło bankietowe', Kolor: 'Bordowy', Linia: 'PREMIUM', Typ: 'krzesło', Sztaplowanie: '18', Składanie: 'FALSE', Outlet: 'TRUE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Ostatnie sztuki' },
+  { ID: '4', Produkt: 'Krzesło cateringowe_CLASSIC_krzesło_SK_0_', Nazwa: 'Krzesło cateringowe', Kolor: 'Czarny', Linia: 'CLASSIC', Typ: 'krzesło', Sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
+  { ID: '10', Produkt: 'Stół cateringowy__stół_SK_0_A', Nazwa: 'Stół cateringowy', Kolor: 'Czarny', Linia: '', Typ: 'stół', Sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
+  { ID: '11', Produkt: 'Stół cateringowy__stół_SK_0_A', Nazwa: 'Stół cateringowy', Kolor: 'Biały', Linia: '', Typ: 'stół', Sztaplowanie: '0', Składanie: 'TRUE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Dostępne w magazynie' },
+  { ID: '20', Produkt: 'Krzesło Chiavari__krzesło_10_', Nazwa: 'Krzesło Chiavari', Kolor: 'Złoty', Linia: '', Typ: 'krzesło', Sztaplowanie: '10', Składanie: 'FALSE', Outlet: 'FALSE', Zestaw: 'FALSE', Zdjęcie: '', Opis: '', Wymiary: '', Dostępność: 'Wkrótce dostępne' },
 ]);

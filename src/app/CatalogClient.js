@@ -4,15 +4,20 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CartIcon, AddToCartModal, CartDrawer } from '@/components/Cart';
+import { Lightbox, ZoomIcon } from '@/components/Lightbox';
 import { useTheme } from '@/lib/themeStore';
+import { dostepnoscStatus } from '@/lib/dostepnosc';
+import { productMatchesFilter, matchesSearch } from '@/lib/autoFilters';
 import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
-function dostepnoscClass(d = '') {
-  const lower = d.toLowerCase();
-  if (lower.includes('magazyn') || lower.includes('dostępn')) return s.dostepnoscDostepne;
-  if (lower.includes('ostatni')) return s.dostepnoscOstatnie;
-  return s.dostepnoscWkrotce;
+const DOSTEPNOSC_CLASS = {
+  dostepne: s.dostepnoscDostepne,
+  ostatnie: s.dostepnoscOstatnie,
+  wkrotce:  s.dostepnoscWkrotce,
+};
+function dostepnoscClass(d) {
+  return DOSTEPNOSC_CLASS[dostepnoscStatus(d)];
 }
 
 function overlayDesc(p) {
@@ -25,38 +30,6 @@ function overlayDesc(p) {
   return parts.join(' · ') || p.typ;
 }
 
-
-/* ─── Lightbox ───────────────────────────────────────────────────────────── */
-function Lightbox({ src, alt, onClose }) {
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [onClose]);
-
-  return (
-    <div className={s.lightbox} onClick={onClose}>
-      <button className={s.lightboxClose} onClick={onClose} aria-label="Zamknij">✕</button>
-      <div className={s.lightboxImgWrap} onClick={e => e.stopPropagation()}>
-        <Image src={src} alt={alt || ''} fill className={s.lightboxImg} sizes="100vw" />
-      </div>
-    </div>
-  );
-}
-
-const ZoomIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <circle cx="11" cy="11" r="7" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    <line x1="11" y1="8" x2="11" y2="14" />
-    <line x1="8" y1="11" x2="14" y2="11" />
-  </svg>
-);
 
 /* ─── Placeholder ────────────────────────────────────────────────────────── */
 function Placeholder({ typ }) {
@@ -188,11 +161,7 @@ export default function CatalogClient({ products, filters }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [activeTyp, setActiveTyp] = useState('');
-  const [activeLinia, setActiveLinia] = useState('');
-  const [onlySkladane, setOnlySkladane] = useState(false);
-  const [onlySztapl, setOnlySztapl] = useState(false);
-  const [onlyOutlet, setOnlyOutlet] = useState(false);
+  const [selected, setSelected] = useState({}); // { [field]: string[] | true }
   const [sortBy, setSortBy] = useState('domyślny');
   const [modal, setModal] = useState(null);
   const [lightbox, setLightbox] = useState(null);
@@ -215,29 +184,54 @@ export default function CatalogClient({ products, filters }) {
   const openModal = useCallback((product, wariantIndex) => setModal({ product, wariantIndex }), []);
   const closeModal = useCallback(() => setModal(null), []);
 
+  const toggleSelectValue = useCallback((field, value) => {
+    setSelected(prev => {
+      const current = prev[field] || [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [field]: next };
+    });
+  }, []);
+
+  const toggleBoolean = useCallback((field) => {
+    setSelected(prev => ({ ...prev, [field]: !prev[field] }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSelected({});
+    setSearch('');
+  }, []);
+
+  const minCenaHurt = (p) => Math.min(...p.warianty.map(w => w.cenaHurtNum));
+
   const visible = useMemo(() => {
     let list = products.filter(p => {
-      if (activeTyp && p.typ !== activeTyp) return false;
-      if (activeLinia && p.linia !== activeLinia) return false;
-      if (onlySkladane && !p.skladanie) return false;
-      if (onlySztapl && p.sztaplowanie === 0) return false;
-      if (onlyOutlet && !p.outlet) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (!p.name.toLowerCase().includes(q) &&
-          !p.typ.toLowerCase().includes(q) &&
-          !p.linia.toLowerCase().includes(q)) return false;
+      if (!matchesSearch(p, search)) return false;
+
+      for (const f of filters) {
+        const sel = selected[f.field];
+        if (f.type === 'boolean') {
+          if (sel && !productMatchesFilter(p, f.field, 'boolean')) return false;
+        } else if (Array.isArray(sel) && sel.length > 0) {
+          if (!productMatchesFilter(p, f.field, 'select', sel)) return false;
+        }
       }
       return true;
     });
 
-    if (sortBy === 'cena ↑') list = [...list].sort((a, b) => a.cenaHurtNum - b.cenaHurtNum);
-    if (sortBy === 'cena ↓') list = [...list].sort((a, b) => b.cenaHurtNum - a.cenaHurtNum);
+    if (sortBy === 'cena ↑') list = [...list].sort((a, b) => minCenaHurt(a) - minCenaHurt(b));
+    if (sortBy === 'cena ↓') list = [...list].sort((a, b) => minCenaHurt(b) - minCenaHurt(a));
     return list;
-  }, [products, activeTyp, activeLinia, onlySkladane, onlySztapl, onlyOutlet, search, sortBy]);
+  }, [products, filters, selected, search, sortBy]);
 
-  const activeFiltersCount = [activeTyp, activeLinia, onlySkladane, onlySztapl, onlyOutlet, search]
-    .filter(Boolean).length;
+  const activeFiltersCount = Object.values(selected).reduce((count, val) => {
+    if (Array.isArray(val)) return count + (val.length > 0 ? 1 : 0);
+    return count + (val ? 1 : 0);
+  }, search ? 1 : 0);
+
+  const selectFilters = filters.filter(f => f.type === 'select');
+  const booleanFilters = filters.filter(f => f.type === 'boolean');
 
   const SORT_OPTIONS = ['domyślny', 'cena ↑', 'cena ↓'];
   const NAV_LINKS = ['Katalog', 'Zamówienia hurtowe', 'O nas', 'Kontakt'];
@@ -323,50 +317,59 @@ export default function CatalogClient({ products, filters }) {
         </button>
 
         <div className={`${s.filterBar} ${filtersOpen ? s.filterBarOpen : ''}`}>
-          <div className={s.categoryGroup}>
-            <span className={s.filterLabel}>Kategoria</span>
-            <div className={s.pills}>
-              <button className={`${s.pill} ${activeTyp === '' ? s.active : ''}`} onClick={() => setActiveTyp('')}>
-                Wszystko
-              </button>
-              {filters.typy.map(typ => (
-                <button
-                  key={typ}
-                  className={`${s.pill} ${activeTyp === typ ? s.active : ''}`}
-                  onClick={() => setActiveTyp(activeTyp === typ ? '' : typ)}
-                >
-                  {typ.charAt(0).toUpperCase() + typ.slice(1)}
-                </button>
-              ))}
+          <div className={s.filterBarHeader}>
+            <button
+              className={s.filterClearBtn}
+              onClick={clearFilters}
+              disabled={activeFiltersCount === 0}
+              tabIndex={activeFiltersCount === 0 ? -1 : 0}
+            >
+              Wyczyść filtry
+            </button>
+          </div>
+
+          {selectFilters.map(f => (
+            <div key={f.field} className={s.filterGroup}>
+              <span className={s.filterLabel}>{f.label}</span>
+              <div className={s.pills}>
+                {f.values.map(value => {
+                  const active = (selected[f.field] || []).includes(value);
+                  return (
+                    <button
+                      key={value}
+                      className={`${s.pill} ${active ? s.active : ''}`}
+                      onClick={() => toggleSelectValue(f.field, value)}
+                    >
+                      {value}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-          <div className={s.filterDivider} />
-          <div className={s.filterGroup}>
-            <label className={s.filterLabel} htmlFor="sel-linia">Linia</label>
-            <select id="sel-linia" className={s.filterSelect} value={activeLinia} onChange={e => setActiveLinia(e.target.value)}>
-              <option value="">Wszystkie</option>
-              {filters.linie.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
-          </div>
-          <div className={s.filterDivider} />
-          <div className={s.toggleGroup}>
-            <span className={s.filterLabel}>Cechy</span>
-            <div className={s.toggles}>
-              <label className={s.toggleLabel}>
-                <input type="checkbox" checked={onlySkladane} onChange={e => setOnlySkladane(e.target.checked)} />
-                Składane
-              </label>
-              <label className={s.toggleLabel}>
-                <input type="checkbox" checked={onlySztapl} onChange={e => setOnlySztapl(e.target.checked)} />
-                Sztaplowane
-              </label>
-              <label className={s.toggleLabel}>
-                <input type="checkbox" checked={onlyOutlet} onChange={e => setOnlyOutlet(e.target.checked)} />
-                Outlet
-              </label>
+          ))}
+
+          {selectFilters.length > 0 && booleanFilters.length > 0 && <div className={s.filterDivider} />}
+
+          {booleanFilters.length > 0 && (
+            <div className={s.toggleGroup}>
+              <span className={s.filterLabel}>Cechy</span>
+              <div className={s.toggles}>
+                {booleanFilters.map(f => (
+                  <label key={f.field} className={s.toggleLabel}>
+                    <input
+                      type="checkbox"
+                      checked={!!selected[f.field]}
+                      onChange={() => toggleBoolean(f.field)}
+                    />
+                    {f.label}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className={s.filterDivider} />
+          )}
+
+          {(selectFilters.length > 0 || booleanFilters.length > 0) && <div className={s.filterDivider} />}
+
           <div className={s.searchGroup}>
             <label className={s.filterLabel} htmlFor="search">Szukaj</label>
             <input
@@ -453,7 +456,7 @@ export default function CatalogClient({ products, filters }) {
       )}
 
       {lightbox && (
-        <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
+        <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} styles={s} />
       )}
 
     </div>
