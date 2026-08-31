@@ -1,0 +1,127 @@
+.content {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 32px 80px;
+}
+
+.lead {
+  font-size: 16px;
+  color: var(--text-mid);
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.sectionTitle em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.section p {
+  color: var(--text-mid);
+  max-width: 640px;
+}
+
+.section p + p {
+  margin-top: 12px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 24px 20px;
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.cardText {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.contactCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 24px 20px;
+}
+
+.contactLabel {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.contactValue {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: var(--text);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.contactValue:hover {
+  color: var(--gold);
+}
+
+.contactNote {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--text-dim);
+  border-left: 2px solid var(--gold-border);
+  padding-left: 14px;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0 16px 60px;
+  }
+}

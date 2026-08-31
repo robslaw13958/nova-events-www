@@ -12,6 +12,9 @@ export default async function sitemap() {
 
   return [
     { url: SITE_URL, lastModified: new Date(), priority: 1 },
+    { url: `${SITE_URL}/zamowienia-hurtowe`, lastModified: new Date() },
+    { url: `${SITE_URL}/o-nas`, lastModified: new Date() },
+    { url: `${SITE_URL}/kontakt`, lastModified: new Date() },
     ...productUrls,
   ];
 }

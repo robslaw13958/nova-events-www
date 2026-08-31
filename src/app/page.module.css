@@ -772,6 +772,9 @@
   border-radius: 2px;
   transition: background var(--transition);
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .btnPrimary:hover {

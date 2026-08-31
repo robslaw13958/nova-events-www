@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CartIcon, AddToCartModal, CartDrawer } from '@/components/Cart';
+import { AddToCartModal, CartDrawer } from '@/components/Cart';
 import { Lightbox, ZoomIcon } from '@/components/Lightbox';
-import { useTheme } from '@/lib/themeStore';
+import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 import { dostepnoscStatus } from '@/lib/dostepnosc';
 import { productMatchesFilter, matchesSearch } from '@/lib/autoFilters';
 import s from './page.module.css';
@@ -157,29 +158,12 @@ function ProductCard({ product, onAddToCart, onZoom }) {
 
 /* ─── Main client component ──────────────────────────────────────────────── */
 export default function CatalogClient({ products, filters }) {
-  const { theme, initTheme, toggleTheme } = useTheme();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState({}); // { [field]: string[] | true }
   const [sortBy, setSortBy] = useState('domyślny');
   const [modal, setModal] = useState(null);
   const [lightbox, setLightbox] = useState(null);
-
-  useEffect(() => {
-    initTheme();
-  }, [initTheme]);
-
-  useEffect(() => {
-    const handler = () => { if (window.innerWidth > 768) setMenuOpen(false); };
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
 
   const openModal = useCallback((product, wariantIndex) => setModal({ product, wariantIndex }), []);
   const closeModal = useCallback(() => setModal(null), []);
@@ -234,60 +218,11 @@ export default function CatalogClient({ products, filters }) {
   const booleanFilters = filters.filter(f => f.type === 'boolean');
 
   const SORT_OPTIONS = ['domyślny', 'cena ↑', 'cena ↓'];
-  const NAV_LINKS = ['Katalog', 'Zamówienia hurtowe', 'O nas', 'Kontakt'];
 
   return (
     <div className={s.wrapper}>
 
-      <header className={s.header}>
-        <div className={s.headerInner}>
-          <div className={s.logo}>
-            <span className={s.logoName}>Nova Events</span>
-            <span className={s.logoTag}>Wyposażenie Cateringowe</span>
-          </div>
-          <div className={s.headerRight}>
-            <nav className={s.desktopNav}>
-              <ul className={s.navLinks}>
-                {NAV_LINKS.map(l => <li key={l}><a href="#">{l}</a></li>)}
-              </ul>
-            </nav>
-            <CartIcon />
-            <button className={s.themeToggle} onClick={toggleTheme} aria-label="Zmień motyw" />
-            <button
-              className={`${s.hamburger} ${menuOpen ? s.hamburgerOpen : ''}`}
-              onClick={() => setMenuOpen(o => !o)}
-              aria-label="Menu"
-              aria-expanded={menuOpen}
-            >
-              <span /><span /><span />
-            </button>
-          </div>
-        </div>
-        <div className={s.goldLine} />
-      </header>
-
-      <div
-        className={`${s.mobileMenuOverlay} ${menuOpen ? s.mobileMenuOverlayOpen : ''}`}
-        onClick={() => setMenuOpen(false)}
-        aria-hidden="true"
-      />
-
-      <nav className={`${s.mobileMenu} ${menuOpen ? s.mobileMenuOpen : ''}`}>
-        <div className={s.mobileMenuHeader}>
-          <span className={s.mobileMenuLogo}>Nova Events</span>
-          <button className={s.mobileMenuClose} onClick={() => setMenuOpen(false)}>✕</button>
-        </div>
-        <ul className={s.mobileNavLinks}>
-          {NAV_LINKS.map(l => (
-            <li key={l}><a href="#" onClick={() => setMenuOpen(false)}>{l}</a></li>
-          ))}
-        </ul>
-        <div className={s.mobileMenuFooter}>
-          <button className={s.mobileThemeBtn} onClick={toggleTheme}>
-            {theme === 'dark' ? '☀ Jasny motyw' : '☾ Ciemny motyw'}
-          </button>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <div className={s.heroStrip}>
         <h1 className={s.heroTitle}>
@@ -416,35 +351,7 @@ export default function CatalogClient({ products, filters }) {
         </div>
       </main>
 
-      <footer>
-        <div className={s.goldLine} style={{ opacity: 0.2 }} />
-        <div className={s.footerInner}>
-          <div className={s.footerBrand}>
-            <span className={s.footerLogo}>Nova Events</span>
-            <p className={s.footerTagline}>
-              Wyposażenie cateringowe na wynajem i sprzedaż hurtową.<br />
-              Obsługujemy eventy, wesela, konferencje i gastronomię.
-            </p>
-          </div>
-          <div className={s.footerContact}>
-            <p className={s.footerContactLabel}>Kontakt</p>
-            <a href="tel:+48123456789" className={s.footerPhone}>+48 123 456 789</a>
-            <a href="mailto:kontakt@novaevents.pl" className={s.footerMail}>kontakt@novaevents.pl</a>
-            <p className={s.footerHours}>Pn–Pt, 8:00–17:00</p>
-          </div>
-          <div className={s.footerContact}>
-            <p className={s.footerContactLabel}>Nawigacja</p>
-            <nav>
-              <ul className={s.footerNav}>
-                {NAV_LINKS.map(l => <li key={l}><a href="#">{l}</a></li>)}
-              </ul>
-            </nav>
-          </div>
-        </div>
-        <div className={s.footerBottom}>
-          <span>© {new Date().getFullYear()} Nova Events · Sprzedaż hurtowa i detaliczna</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <CartDrawer />
       {modal && (
