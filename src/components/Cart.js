@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart, HURT_PROG, cenaItem } from '@/lib/cartStore';
+import { formatPrice } from '@/lib/format';
 import s from './cart.module.css';
 
 /* ─── Cart Icon (dla headera) ────────────────────────────────────────────── */
@@ -46,7 +47,7 @@ export function AddToCartModal({ product, wariantIndex, onClose }) {
 
   const isHurt  = ilosc >= HURT_PROG;
   const cena    = isHurt ? wariant.cenaHurtNum : wariant.cenaDetalNum;
-  const suma    = (cena * ilosc).toFixed(2).replace('.', ',');
+  const suma    = formatPrice(cena * ilosc);
 
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose(); };
@@ -153,7 +154,7 @@ function CartItemRow({ item }) {
 
   const isHurt   = item.ilosc >= HURT_PROG;
   const cena     = cenaItem(item);
-  const subtotal = (cena * item.ilosc).toFixed(2).replace('.', ',');
+  const subtotal = formatPrice(cena * item.ilosc);
   const cenaLabel = isHurt ? item.cenaHurt : item.cenaDetal;
 
   return (
@@ -203,7 +204,7 @@ export function CartDrawer() {
 
   const totalQty = items.reduce((sum, i) => sum + i.ilosc, 0);
   const totalVal = items.reduce((sum, i) => sum + cenaItem(i) * i.ilosc, 0);
-  const totalStr = totalVal.toFixed(2).replace('.', ',');
+  const totalStr = formatPrice(totalVal);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -251,7 +252,9 @@ export function CartDrawer() {
                   {totalStr} <span className={s.cartTotalCurrency}>zł</span>
                 </span>
               </div>
-              <button className={s.cartCta}>Wyślij zapytanie</button>
+              <button className={s.cartCta} disabled title="Funkcja wkrótce dostępna">
+                Wyślij zapytanie (wkrótce)
+              </button>
             </div>
           </>
         )}

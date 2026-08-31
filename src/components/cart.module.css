@@ -595,3 +595,8 @@
 }
 
 .cartCta:hover { background: var(--gold-light); }
+.cartCta:disabled {
+  background: var(--border, #333);
+  color: var(--text-dim, #999);
+  cursor: not-allowed;
+}
