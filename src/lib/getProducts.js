@@ -41,6 +41,16 @@ export function colorToHex(name = '') {
   return COLOR_MAP[name.toLowerCase().trim()] ?? '#888888';
 }
 
+// ─── Linki Google Drive → bezpośredni URL do obrazka ───────────────────────
+// Wklejony w arkuszu link "Udostępnij" (.../file/d/ID/view?usp=sharing) nie jest
+// bezpośrednim adresem obrazka — trzeba go zamienić na endpoint miniatury.
+function normalizeImageUrl(url = '') {
+  if (!url) return url;
+  const match = url.match(/drive\.google\.com\/file\/d\/([^/]+)/) || url.match(/[?&]id=([^&]+)/);
+  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  return url;
+}
+
 // ─── Parser CSV ────────────────────────────────────────────────────────────
 function parseCsv(text) {
   const { data } = Papa.parse(text, {
@@ -110,12 +120,12 @@ function groupProducts(rows) {
       cenaDetalNum: parseCenaFloat(row['Cena Detal [zł]']),
       outlet: row['Outlet']?.toLowerCase() === 'true',
       dostepnosc: row['Dostępność'] || '',
-      zdjecie: row['Zdjęcie'] || '',
+      zdjecie: normalizeImageUrl(row['Zdjęcie'] || ''),
     });
 
     // Jeśli brak głównego zdjęcia, uzupełnij z wariantu
     if (!produkt.zdjecie && row['Zdjęcie']) {
-      produkt.zdjecie = row['Zdjęcie'];
+      produkt.zdjecie = normalizeImageUrl(row['Zdjęcie']);
     }
     // Dostępność — nadpisz jeśli lepsza informacja
     if (row['Dostępność']) {
