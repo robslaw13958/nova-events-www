@@ -131,9 +131,9 @@ decyzja (pełna automatyka > ręcznie dobrana semantyka pojedynczej kolumny).
 
 ## 5. Świadomie odłożone (decyzje z tej sesji)
 
-- **Koszyk wciąż nie wysyła zapytania nigdzie** — przycisk jest tylko wyłączony z opisem
-  „wkrótce”. Docelowy mechanizm (mailto / WhatsApp / API + e-mail) do ustalenia i wdrożenia
-  osobno.
+- **Zapytanie z koszyka idzie przez `mailto`**, bez backendu (decyzja z 2026-10-05): treść trafia
+  też do schowka, są przyciski „Kopiuj zapytanie”, WhatsApp i telefon (`src/lib/zapytanie.js`,
+  `src/lib/contact.js`). Formularz wysyłany z serwera dopiero przy dużej liczbie zapytań.
 - **Martwe linki nawigacyjne** („Katalog”, „Zamówienia hurtowe”, „O nas”, „Kontakt” →
   `href="#"`) pozostawione bez zmian — czekają na docelowe podstrony.
 - **Brak testów jednostkowych i migracji do TypeScript** — świadomie poza zakresem tego
@@ -141,9 +141,7 @@ decyzja (pełna automatyka > ręcznie dobrana semantyka pojedynczej kolumny).
 
 ## 6. Co jeszcze warto poprawić / dodać
 
-1. **Dokończyć cel biznesowy koszyka** — podłączyć „Wyślij zapytanie” pod realny mechanizm:
-   API route wysyłające e-mail (np. Resend/Nodemailer), `mailto:` z gotową treścią, lub
-   WhatsApp link — inaczej cała funkcja koszyka pozostaje fasadą.
+1. **Aktualna lista zadań jest w `roadmap.md`** — poniższe punkty to historyczne notatki.
 2. **Ustawić `NEXT_PUBLIC_SITE_URL`** w środowisku produkcyjnym (używane przez nowe
    `sitemap.js`/`robots.js`; obecnie fallback to placeholder `https://novaevents.pl`).
 3. **Strony dla linków nawigacyjnych** („O nas”, „Kontakt”, „Zamówienia hurtowe”) albo ich

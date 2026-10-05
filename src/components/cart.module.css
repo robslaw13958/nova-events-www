@@ -595,6 +595,62 @@
 }
 
 .cartCta:hover { background: var(--gold-light); }
+/* ─── Wysyłka zapytania ──────────────────────────────────────────────────── */
+.inquiry {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inquiryHint {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-mid);
+  padding: 8px 12px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: 2px;
+}
+
+.inquiryHint strong {
+  color: var(--text);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.inquiryAlt {
+  display: flex;
+  gap: 6px;
+}
+
+.inquiryBtn {
+  flex: 1;
+  padding: 10px 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-mid);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.inquiryBtn:hover {
+  border-color: var(--gold-border);
+  color: var(--gold);
+}
+
+.inquiryNote {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.5;
+}
+
 .cartCta:disabled {
   background: var(--border, #333);
   color: var(--text-dim, #999);

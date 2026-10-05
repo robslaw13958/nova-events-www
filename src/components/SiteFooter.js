@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { NAV_LINKS } from '@/lib/navLinks';
+import { CONTACT, mailtoHref, phoneHref } from '@/lib/contact';
 import s from '@/app/page.module.css';
 
 export default function SiteFooter() {
@@ -16,9 +17,9 @@ export default function SiteFooter() {
         </div>
         <div className={s.footerContact}>
           <p className={s.footerContactLabel}>Kontakt</p>
-          <a href="tel:+48123456789" className={s.footerPhone}>+48 123 456 789</a>
-          <a href="mailto:kontakt@novaevents.pl" className={s.footerMail}>kontakt@novaevents.pl</a>
-          <p className={s.footerHours}>Pn–Pt, 8:00–17:00</p>
+          <a href={phoneHref()} className={s.footerPhone}>{CONTACT.phone}</a>
+          <a href={mailtoHref()} className={s.footerMail}>{CONTACT.email}</a>
+          <p className={s.footerHours}>{CONTACT.hours}</p>
         </div>
         <div className={s.footerContact}>
           <p className={s.footerContactLabel}>Nawigacja</p>

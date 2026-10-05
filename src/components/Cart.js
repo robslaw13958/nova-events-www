@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useCart, HURT_PROG, cenaItem } from '@/lib/cartStore';
 import { formatPrice } from '@/lib/format';
+import { CONTACT, mailtoHref, phoneHref, whatsappHref } from '@/lib/contact';
+import { ZAPYTANIE_TEMAT, buildZapytanie, zapytanieMailBody, copyToClipboard } from '@/lib/zapytanie';
 import s from './cart.module.css';
 
 /* ─── Cart Icon (dla headera) ────────────────────────────────────────────── */
@@ -175,6 +177,7 @@ function CartItemRow({ item }) {
             <div className={s.cartItemColorRow}>
               <ColorDot hex={item.hex} />
               <span className={s.cartItemColorName}>{item.kolor}</span>
+              {item.outlet && <span className={s.hurtTag}>outlet</span>}
               {isHurt && <span className={s.hurtTag}>hurt</span>}
             </div>
           </div>
@@ -194,6 +197,75 @@ function CartItemRow({ item }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Wysyłka zapytania (mailto + schowek + WhatsApp + telefon) ─────────── */
+// Bez backendu: klient wysyła zapytanie własnym programem pocztowym.
+// Przy kliknięciu „e-mail” treść trafia też do schowka — gdy na komputerze nie ma
+// skonfigurowanego programu pocztowego, klient może ją wkleić w dowolną pocztę.
+function InquiryActions({ items }) {
+  const [status, setStatus] = useState(null); // 'mail' | 'copied' | 'copyFailed'
+  const resetTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(resetTimer.current), []);
+
+  const text = () => buildZapytanie(items, window.location.origin);
+
+  const showStatus = (next, ms) => {
+    setStatus(next);
+    clearTimeout(resetTimer.current);
+    if (ms) resetTimer.current = setTimeout(() => setStatus(null), ms);
+  };
+
+  const sendMail = async () => {
+    const body = text();
+    await copyToClipboard(body);
+    showStatus('mail');
+    window.location.href = mailtoHref({ subject: ZAPYTANIE_TEMAT, body: zapytanieMailBody(body) });
+  };
+
+  const copy = async () => {
+    const ok = await copyToClipboard(text());
+    showStatus(ok ? 'copied' : 'copyFailed', 4000);
+  };
+
+  return (
+    <div className={s.inquiry}>
+      <button className={s.cartCta} onClick={sendMail}>
+        Wyślij zapytanie e-mailem
+      </button>
+
+      {status === 'mail' && (
+        <p className={s.inquiryHint} role="status">
+          Treść zapytania jest też w schowku. Jeśli program pocztowy się nie otworzył,
+          wklej ją w wiadomość na adres <strong>{CONTACT.email}</strong>.
+        </p>
+      )}
+
+      <div className={s.inquiryAlt}>
+        <button className={s.inquiryBtn} onClick={copy}>
+          {status === 'copied' ? 'Skopiowano ✓' : status === 'copyFailed' ? 'Nie udało się skopiować' : 'Kopiuj zapytanie'}
+        </button>
+        {CONTACT.whatsapp && (
+          <a
+            className={s.inquiryBtn}
+            href={whatsappHref(buildZapytanie(items))}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp
+          </a>
+        )}
+        <a className={s.inquiryBtn} href={phoneHref()}>
+          Zadzwoń
+        </a>
+      </div>
+
+      <p className={s.inquiryNote}>
+        Zapytanie jest niezobowiązujące — odpowiemy z potwierdzeniem dostępności i ceny.
+      </p>
     </div>
   );
 }
@@ -252,9 +324,7 @@ export function CartDrawer() {
                   {totalStr} <span className={s.cartTotalCurrency}>zł</span>
                 </span>
               </div>
-              <button className={s.cartCta} disabled title="Funkcja wkrótce dostępna">
-                Wyślij zapytanie (wkrótce)
-              </button>
+              <InquiryActions items={items} />
             </div>
           </>
         )}

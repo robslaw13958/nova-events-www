@@ -21,7 +21,8 @@ export const useCart = create(
 
       addItem: (product, wariantIndex, ilosc) => {
         const w = product.warianty[wariantIndex];
-        const key = `${product.id}__${w.kolor}`;
+        // Outlet ma osobny klucz — ten sam kolor w outlecie ma inną cenę
+        const key = `${product.id}__${w.kolor}${w.outlet ? '__outlet' : ''}`;
 
         set(state => {
           const existing = state.items.find(i => i.key === key);
@@ -41,6 +42,7 @@ export const useCart = create(
               linia:        product.linia,
               kolor:        w.kolor,
               hex:          w.hex,
+              outlet:       w.outlet,
               zdjecie:      w.zdjecie,
               cenaDetal:    w.cenaDetal,
               cenaHurt:     w.cenaHurt,

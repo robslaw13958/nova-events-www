@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
+import { CONTACT, mailtoHref, phoneHref } from '@/lib/contact';
 import s from '../page.module.css';
 import st from '../static.module.css';
 
@@ -29,12 +30,12 @@ export default function KontaktPage() {
         <div className={st.contactGrid}>
           <div className={st.contactCard}>
             <p className={st.contactLabel}>Telefon</p>
-            <a href="tel:+48123456789" className={st.contactValue}>+48 123 456 789</a>
-            <p className={st.contactNote}>Pn–Pt, 8:00–17:00</p>
+            <a href={phoneHref()} className={st.contactValue}>{CONTACT.phone}</a>
+            <p className={st.contactNote}>{CONTACT.hours}</p>
           </div>
           <div className={st.contactCard}>
             <p className={st.contactLabel}>E-mail</p>
-            <a href="mailto:kontakt@novaevents.pl" className={st.contactValue}>kontakt@novaevents.pl</a>
+            <a href={mailtoHref()} className={st.contactValue}>{CONTACT.email}</a>
             <p className={st.contactNote}>Odpowiedź zwykle w ciągu 1–2 dni roboczych</p>
           </div>
         </div>
