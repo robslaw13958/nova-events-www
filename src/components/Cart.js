@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Image from 'next/image';
+import ProductImage from '@/components/ProductImage';
 import { useCart, HURT_PROG, cenaItem } from '@/lib/cartStore';
 import { formatPrice } from '@/lib/format';
 import { CONTACT, mailtoHref, phoneHref, whatsappHref } from '@/lib/contact';
@@ -79,7 +79,7 @@ export function AddToCartModal({ product, wariantIndex, onClose }) {
         <div className={s.modalTop}>
           {wariant.zdjecie && (
             <div className={s.modalImgWrap}>
-              <Image src={wariant.zdjecie} alt={product.name} fill
+              <ProductImage src={wariant.zdjecie} alt={product.name} fill
                 style={{ objectFit: 'contain' }} sizes="90px" />
             </div>
           )}
@@ -164,7 +164,7 @@ function CartItemRow({ item }) {
     <div className={s.cartItemRow}>
       {item.zdjecie ? (
         <div className={s.cartItemImg}>
-          <Image src={item.zdjecie} alt={item.name} fill
+          <ProductImage src={item.zdjecie} alt={item.name} fill
             style={{ objectFit: 'contain' }} sizes="64px" />
         </div>
       ) : (

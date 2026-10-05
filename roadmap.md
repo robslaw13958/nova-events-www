@@ -35,11 +35,11 @@ Sprzedaż traktujemy standardowo, wynajem jest ustalany indywidualnie.
 ### Zdjęcia z Google Drive: uodpornić, nie zmieniać
 - [ ] **(poza kodem)** Udostępnić cały folder ze zdjęciami jako „Każda osoba mająca link”.
       Nowe pliki dziedziczą to ustawienie. Teraz zdjęcie „Stół bankietowy” nie jest publiczne.
-- [ ] `images.minimumCacheTTL` około 7 dni (domyślnie 4 h): rzadsze pobieranie z Drive,
+- [x] `images.minimumCacheTTL` około 7 dni (domyślnie 4 h): rzadsze pobieranie z Drive,
       szybsze ładowanie. Uwaga: nadpisanie pliku nową wersją pokaże się z opóźnieniem.
       Wgranie nowego pliku działa od razu, bo ma nowy link.
-- [ ] Zastępczy obrazek, gdy zdjęcie się nie załaduje (zamiast ikony zepsutej grafiki).
-- [ ] Ukryta strona `/status` dla osoby edytującej arkusz: produkty bez zdjęcia
+- [x] Zastępczy obrazek, gdy zdjęcie się nie załaduje (zamiast ikony zepsutej grafiki).
+- [x] Ukryta strona `/status` dla osoby edytującej arkusz: produkty bez zdjęcia
       lub z niedostępnym zdjęciem, oraz informacja, czy strona działa na danych zapasowych.
 
 ## Na później (razem ze zmianami w arkuszu)

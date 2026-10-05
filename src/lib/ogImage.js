@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fetchImage } from './imageCheck';
 
 // Wspólne elementy obrazków podglądu linków (opengraph-image.js): fonty strony i kolory.
 // Generator (Satori) obsługuje tylko TTF/OTF, dlatego fonty leżą w repo jako pliki TTF.
@@ -29,25 +30,12 @@ export async function loadOgFonts() {
   ];
 }
 
-// Format rozpoznawany po pierwszych bajtach pliku, a nie po nagłówku Content-Type —
-// np. mextra.pl wysyła pliki PNG oznaczone jako image/jpeg, a Satori wtedy się wywraca.
-function detectImageType(bytes) {
-  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
-  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'image/png';
-  return null;
-}
+const OG_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
 
-// Zdjęcie jako data URI albo null. Niedostępne lub nieobsługiwane zdjęcie (np. plik na Drive
-// bez publicznego dostępu zwraca stronę HTML) nie może przerwać generowania podglądu.
+// Zdjęcie jako data URI albo null — generator obsługuje tylko JPEG i PNG, a niedostępne
+// zdjęcie (np. plik na Drive bez publicznego dostępu) nie może przerwać generowania podglądu.
 export async function fetchImageDataUri(url) {
-  if (!url) return null;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
-    const bytes = Buffer.from(await res.arrayBuffer());
-    const type = detectImageType(bytes);
-    return type ? `data:${type};base64,${bytes.toString('base64')}` : null;
-  } catch {
-    return null;
-  }
+  const image = await fetchImage(url);
+  if (!image.ok || !OG_IMAGE_TYPES.has(image.type)) return null;
+  return `data:${image.type};base64,${image.bytes.toString('base64')}`;
 }

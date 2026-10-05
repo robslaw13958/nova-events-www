@@ -4,6 +4,10 @@ const nextConfig = {
   // Cała podsieć domowa — router przydziela adres przez DHCP, więc pojedynczy IP się dezaktualizuje
   allowedDevOrigins: ['192.168.1.*'],
   images: {
+    // Zdjęcia z Google Drive przechowywane na serwerze 7 dni (domyślnie 4 h) — rzadsze
+    // pobieranie z Drive. Nowy plik ma nowy link, więc wymiana zdjęcia działa od razu;
+    // tylko nadpisanie pliku na Drive nową wersją pokaże się z opóźnieniem.
+    minimumCacheTTL: 604800,
     remotePatterns: [
       {
         protocol: 'https',

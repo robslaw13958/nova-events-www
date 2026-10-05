@@ -145,17 +145,23 @@ function groupProducts(rows) {
 }
 
 // ─── Główna funkcja eksportowana ──────────────────────────────────────────────
-export async function getProducts() {
+// Zwraca też źródło danych — strona /status pokazuje, gdy arkusz jest niedostępny
+// i katalog działa na danych zastępczych.
+export async function loadCatalog() {
   try {
     const res = await fetch(SHEETS_CSV_URL, { next: { revalidate: 300 } });
     if (!res.ok) throw new Error(`Sheets HTTP ${res.status}`);
     const text = await res.text();
     const rows = parseCsv(text);
-    return groupProducts(rows);
+    return { products: groupProducts(rows), source: 'sheet', error: null };
   } catch (err) {
     console.error('[getProducts] Błąd pobierania arkusza:', err.message);
-    return FALLBACK_PRODUCTS;
+    return { products: FALLBACK_PRODUCTS, source: 'fallback', error: err.message };
   }
+}
+
+export async function getProducts() {
+  return (await loadCatalog()).products;
 }
 
 // ─── Dane zastępcze (gdy arkusz niedostępny) ───────────────────────────────────

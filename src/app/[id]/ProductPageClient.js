@@ -6,6 +6,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { Lightbox, ZoomIcon } from '@/components/Lightbox';
+import ProductImage, { useImageError } from '@/components/ProductImage';
 import { useCart, HURT_PROG } from '@/lib/cartStore';
 import { formatPrice } from '@/lib/format';
 import { isOpisNote, opisExcerpt } from '@/lib/opis';
@@ -48,10 +49,12 @@ function buildParams(p) {
 
 /* ─── Galeria ────────────────────────────────────────────────────────────── */
 function Gallery({ product, mainSrc, photos, onSelectVariant, onZoom }) {
+  const [mainFailed, onMainError] = useImageError(mainSrc);
+
   return (
     <div className={s.gallery}>
       <div className={s.galleryMain}>
-        {mainSrc ? (
+        {!mainFailed ? (
           <>
             <Image
               key={mainSrc}
@@ -62,6 +65,7 @@ function Gallery({ product, mainSrc, photos, onSelectVariant, onZoom }) {
               sizes="(max-width: 900px) 100vw, 680px"
               loading="eager"
               fetchPriority="high"
+              onError={onMainError}
             />
             <button className={s.zoomBtn} onClick={() => onZoom(mainSrc)} aria-label="Powiększ zdjęcie">
               <ZoomIcon />
@@ -84,7 +88,14 @@ function Gallery({ product, mainSrc, photos, onSelectVariant, onZoom }) {
               onClick={() => onSelectVariant(photo.wariantIndex)}
               aria-label={`Pokaż wariant: ${photo.kolor || 'Standard'}`}
             >
-              <Image src={photo.src} alt="" fill className={s.thumbImg} sizes="88px" />
+              <ProductImage
+                src={photo.src}
+                alt=""
+                fill
+                className={s.thumbImg}
+                sizes="88px"
+                fallback={<span className={s.thumbFallback}>📦</span>}
+              />
             </button>
           ))}
         </div>
@@ -223,11 +234,14 @@ function RelatedCard({ item }) {
   return (
     <Link href={`/${encodeURIComponent(item.id)}`} className={s.relatedCard}>
       <div className={s.relatedImage}>
-        {item.zdjecie ? (
-          <Image src={item.zdjecie} alt="" fill className={s.relatedImg} sizes="(max-width: 640px) 50vw, 300px" />
-        ) : (
-          <span className={s.placeholderIcon}>📦</span>
-        )}
+        <ProductImage
+          src={item.zdjecie}
+          alt=""
+          fill
+          className={s.relatedImg}
+          sizes="(max-width: 640px) 50vw, 300px"
+          fallback={<span className={s.placeholderIcon}>📦</span>}
+        />
       </div>
       <div className={s.relatedBody}>
         {categoryLabel(item) && <p className={s.relatedCategory}>{categoryLabel(item)}</p>}

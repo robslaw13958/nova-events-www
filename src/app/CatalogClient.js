@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AddToCartModal } from '@/components/Cart';
 import { Lightbox, ZoomIcon } from '@/components/Lightbox';
+import { useImageError } from '@/components/ProductImage';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { dostepnoscStatus } from '@/lib/dostepnosc';
@@ -54,18 +55,20 @@ function ProductCard({ product, onAddToCart, onZoom }) {
   const facts = overlayFacts(product);
   const excerpt = useMemo(() => opisExcerpt(product.opis, 140), [product.opis]);
   const showSwatches = product.warianty.length > 1 || !!wariant.kolor;
+  const [imageFailed, onImageError] = useImageError(wariant.zdjecie);
 
   return (
     <article className={s.card}>
       <div className={s.cardImage}>
         <Link href={href} className={s.cardImageLink} tabIndex={-1} aria-hidden="true">
-          {wariant.zdjecie ? (
+          {!imageFailed ? (
             <Image
               src={wariant.zdjecie}
               alt=""
               fill
               className={s.cardImg}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+              onError={onImageError}
             />
           ) : (
             <Placeholder typ={product.typ} />
@@ -98,7 +101,7 @@ function ProductCard({ product, onAddToCart, onZoom }) {
             </Link>
           </div>
         </div>
-        {wariant.zdjecie && (
+        {!imageFailed && (
           <button
             className={s.zoomBtn}
             onClick={e => { e.preventDefault(); e.stopPropagation(); onZoom(wariant.zdjecie, product.name); }}
