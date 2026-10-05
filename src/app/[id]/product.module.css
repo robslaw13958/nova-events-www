@@ -495,16 +495,20 @@
 
 .descSpecs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   background: var(--border);
   border: 1px solid var(--border);
 }
 
 .descSpecRow {
+  grid-column: span 2;
   background: var(--surface);
   padding: 10px 14px;
 }
+
+.descSpecHalf { grid-column: span 3; }
+.descSpecFull { grid-column: 1 / -1; }
 
 .descSpecRow dt {
   font-size: 10px;
@@ -837,4 +841,9 @@
   .relatedGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .relatedName { font-size: 15px; }
   .paramRow { grid-template-columns: 110px minmax(0, 1fr); }
+
+  /* Parametry z opisu po 2 w rzędzie, nieparzysty ostatni na całą szerokość */
+  .descSpecRow,
+  .descSpecHalf { grid-column: span 3; }
+  .descSpecRow:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
