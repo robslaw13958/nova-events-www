@@ -8,12 +8,18 @@
  * - w przeciwnym razie (wolny tekst, zbyt duża różnorodność, brak powtórzeń)
  *   → pole pomijane jako kandydat na filtr
  *
+ * Kolumny opisowe (EXCLUDED_FIELDS) oraz kolumny z długimi wartościami nigdy nie są
+ * filtrami — długie pigułki rozsadzają panel filtrów, a filtrowanie np. po dokładnych
+ * wymiarach nie ma sensu. Nadal są przeszukiwane przez pole „Szukaj”.
+ *
  * Wymóg powtarzalności wartości (a nie tylko limit liczby unikalnych wartości)
  * chroni przed sytuacją, w której mały katalog (np. 10 produktów) sprawiłby,
  * że pole opisowe z niemal unikalnymi wartościami też stałoby się filtrem.
  */
 
 const MAX_DISTINCT_VALUES = 12;
+const MAX_VALUE_LENGTH = 24;
+const EXCLUDED_FIELDS = new Set(['Opis', 'Wymiary']);
 
 function isBooleanField(distinctValues) {
   return distinctValues.length > 0 && distinctValues.every(v => {
@@ -33,6 +39,8 @@ export function buildAutoFilters(products) {
   const filters = [];
 
   for (const field of fieldOrder) {
+    if (EXCLUDED_FIELDS.has(field)) continue;
+
     const distinct = new Set();
     const productsPerValue = new Map();
 
@@ -51,7 +59,8 @@ export function buildAutoFilters(products) {
     }
 
     const hasRepeatedValue = Array.from(productsPerValue.values()).some(count => count >= 2);
-    if (distinctValues.length >= 2 && distinctValues.length <= MAX_DISTINCT_VALUES && hasRepeatedValue) {
+    const hasShortValues = distinctValues.every(v => v.length <= MAX_VALUE_LENGTH);
+    if (distinctValues.length >= 2 && distinctValues.length <= MAX_DISTINCT_VALUES && hasRepeatedValue && hasShortValues) {
       const values = distinctValues.sort((a, b) =>
         a.localeCompare(b, 'pl', { numeric: true, sensitivity: 'base' })
       );

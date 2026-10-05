@@ -11,6 +11,7 @@
  */
 
 import Papa from 'papaparse';
+import { isOpisNote } from './opis';
 
 const SHEET_ID = process.env.NEXT_PUBLIC_SHEET_ID || '112OyXCrzHvFSaZISEJJCIrQcq-Cs9t-4Nqr5dhtGfQE';
 const SHEET_GID = process.env.NEXT_PUBLIC_SHEET_GID || '0';
@@ -62,9 +63,9 @@ function parseCsv(text) {
   return data;
 }
 
-// Parsowanie ceny "90,00" → 90
+// Parsowanie ceny "90,00" → 90, "22 500,00" → 22500 (spacja/twarda spacja jako separator tysięcy)
 function parseCenaFloat(raw = '') {
-  return parseFloat(raw.replace(',', '.')) || 0;
+  return parseFloat(raw.replace(/\s/g, '').replace(',', '.')) || 0;
 }
 
 // ─── Pola wyłączone z automatycznych filtrów (patrz lib/autoFilters.js) ────────
@@ -101,7 +102,7 @@ function groupProducts(rows) {
         skladanie: row['Składanie']?.toLowerCase() === 'true',
         sztaplowanie: parseInt(row['Sztaplowanie'] || '0', 10),
         zestaw: row['Zestaw']?.toLowerCase() === 'true',
-        opis: row['Opis'] || '',
+        opis: '',
         wymiary: row['Wymiary'] || '',
         warianty: [],
         fields: {},
@@ -121,7 +122,14 @@ function groupProducts(rows) {
       outlet: row['Outlet']?.toLowerCase() === 'true',
       dostepnosc: row['Dostępność'] || '',
       zdjecie: normalizeImageUrl(row['Zdjęcie'] || ''),
+      opis: row['Opis'] || '',
     });
+
+    // Opis produktu = pierwszy pełny opis wariantu (krótka notatka typu
+    // „Lekkie zarysowania” przy wariancie outlet nie jest opisem produktu)
+    if (!produkt.opis && row['Opis'] && !isOpisNote(row['Opis'])) {
+      produkt.opis = row['Opis'];
+    }
 
     // Jeśli brak głównego zdjęcia, uzupełnij z wariantu
     if (!produkt.zdjecie && row['Zdjęcie']) {

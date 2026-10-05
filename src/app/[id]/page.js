@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { getProducts } from '@/lib/getProducts';
+import { opisExcerpt } from '@/lib/opis';
 import ProductPageClient from './ProductPageClient';
+
+const RELATED_LIMIT = 4;
 
 function findProduct(products, id) {
   return products.find(p => p.id === decodeURIComponent(id));
@@ -10,8 +13,33 @@ function metaDescription(p) {
   const parts = [];
   if (p.linia) parts.push(`Linia ${p.linia}`);
   if (p.wymiary) parts.push(p.wymiary);
-  if (p.opis) parts.push(p.opis);
+  const excerpt = opisExcerpt(p.opis, 140);
+  if (excerpt) parts.push(excerpt);
   return parts.join(' · ') || p.typ;
+}
+
+// Produkty z tej samej linii mają pierwszeństwo przed produktami tego samego typu;
+// przy remisie zostaje kolejność z katalogu.
+function relatedProducts(products, product) {
+  const score = p =>
+    (product.linia && p.linia === product.linia ? 2 : 0) +
+    (product.typ && p.typ === product.typ ? 1 : 0);
+
+  return products
+    .filter(p => p.id !== product.id)
+    .map(p => ({ p, score: score(p) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, RELATED_LIMIT)
+    .map(({ p }) => ({
+      id: p.id,
+      name: p.name,
+      linia: p.linia,
+      typ: p.typ,
+      wymiary: p.wymiary,
+      zdjecie: p.warianty.find(w => w.zdjecie)?.zdjecie || '',
+      cenaOd: Math.min(...p.warianty.map(w => w.cenaDetalNum)),
+    }));
 }
 
 export async function generateStaticParams() {
@@ -38,5 +66,5 @@ export default async function ProductPage({ params }) {
 
   if (!product) notFound();
 
-  return <ProductPageClient product={product} />;
+  return <ProductPageClient product={product} related={relatedProducts(products, product)} />;
 }

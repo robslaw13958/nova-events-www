@@ -9,6 +9,7 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { dostepnoscStatus } from '@/lib/dostepnosc';
 import { productMatchesFilter, matchesSearch } from '@/lib/autoFilters';
+import { opisExcerpt } from '@/lib/opis';
 import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -16,19 +17,20 @@ const DOSTEPNOSC_CLASS = {
   dostepne: s.dostepnoscDostepne,
   ostatnie: s.dostepnoscOstatnie,
   wkrotce:  s.dostepnoscWkrotce,
+  niedostepne: s.dostepnoscNiedostepne,
 };
 function dostepnoscClass(d) {
   return DOSTEPNOSC_CLASS[dostepnoscStatus(d)];
 }
 
-function overlayDesc(p) {
+// Krótkie fakty o produkcie — pełny opis jest na stronie produktu
+function overlayFacts(p) {
   const parts = [];
   if (p.linia) parts.push(`Linia ${p.linia}`);
   if (p.wymiary) parts.push(p.wymiary);
   if (p.sztaplowanie) parts.push(`Sztaplowanie: ${p.sztaplowanie} szt.`);
   if (p.skladanie) parts.push('Składane');
-  if (p.opis) parts.push(p.opis);
-  return parts.join(' · ') || p.typ;
+  return parts.join(' · ');
 }
 
 
@@ -46,21 +48,27 @@ function Placeholder({ typ }) {
 function ProductCard({ product, onAddToCart, onZoom }) {
   const [activeVariant, setActiveVariant] = useState(0);
   const wariant = product.warianty[activeVariant];
+  const href = `/${encodeURIComponent(product.id)}`;
+  const facts = overlayFacts(product);
+  const excerpt = useMemo(() => opisExcerpt(product.opis, 140), [product.opis]);
+  const showSwatches = product.warianty.length > 1 || !!wariant.kolor;
 
   return (
     <article className={s.card}>
       <div className={s.cardImage}>
-        {wariant.zdjecie ? (
-          <Image
-            src={wariant.zdjecie}
-            alt={product.name}
-            fill
-            className={s.cardImg}
-            sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 400px"
-          />
-        ) : (
-          <Placeholder typ={product.typ} />
-        )}
+        <Link href={href} className={s.cardImageLink} tabIndex={-1} aria-hidden="true">
+          {wariant.zdjecie ? (
+            <Image
+              src={wariant.zdjecie}
+              alt=""
+              fill
+              className={s.cardImg}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+            />
+          ) : (
+            <Placeholder typ={product.typ} />
+          )}
+        </Link>
 
         {wariant.outlet && (
           <span className={`${s.badge} ${s.badgeOutlet}`}>Outlet</span>
@@ -68,9 +76,10 @@ function ProductCard({ product, onAddToCart, onZoom }) {
 
         <div className={s.cardOverlay}>
           <p className={s.overlayTitle}>{product.name}</p>
-          <p className={s.overlayDesc}>{overlayDesc(product)}</p>
+          {facts && <p className={s.overlayFacts}>{facts}</p>}
+          {excerpt && <p className={s.overlayDesc}>{excerpt}</p>}
           {wariant.dostepnosc && (
-            <p style={{ fontSize: 11, letterSpacing: '0.08em' }}>
+            <p className={s.overlayDostepnosc}>
               <span className={`${s.dostepnosc} ${dostepnoscClass(wariant.dostepnosc)}`} />
               {wariant.dostepnosc}
             </p>
@@ -82,10 +91,7 @@ function ProductCard({ product, onAddToCart, onZoom }) {
             >
               Dodaj do koszyka
             </button>
-            <Link
-              href={`/${encodeURIComponent(product.id)}`}
-              className={s.btnGhost}
-            >
+            <Link href={href} className={s.btnGhost}>
               Szczegóły
             </Link>
           </div>
@@ -106,19 +112,22 @@ function ProductCard({ product, onAddToCart, onZoom }) {
           <p className={s.cardCategory}>
             {product.linia ? `${product.linia} · ${product.typ}` : product.typ}
           </p>
-          <h2 className={s.cardName}>{product.name}</h2>
+          <h2 className={s.cardName}>
+            <Link href={href} className={s.cardNameLink}>{product.name}</Link>
+          </h2>
           {product.wymiary && <p className={s.cardSub}>{product.wymiary}</p>}
 
-          {product.warianty.length > 0 && (
+          {showSwatches && (
             <div className={s.variants}>
               {product.warianty.map((w, i) => (
                 <button
                   key={i}
                   className={`${s.variant} ${i === activeVariant ? s.variantActive : ''}`}
                   style={{ background: w.hex }}
-                  title={w.kolor}
+                  title={w.kolor || 'Standard'}
                   onClick={() => setActiveVariant(i)}
-                  aria-label={`Kolor: ${w.kolor}`}
+                  aria-label={`Kolor: ${w.kolor || 'Standard'}`}
+                  aria-pressed={i === activeVariant}
                 />
               ))}
             </div>
@@ -145,10 +154,7 @@ function ProductCard({ product, onAddToCart, onZoom }) {
         >
           + Dodaj
         </button>
-        <Link
-          href={`/${encodeURIComponent(product.id)}`}
-          className={s.cardMobileLink}
-        >
+        <Link href={href} className={s.cardMobileLink}>
           Szczegóły →
         </Link>
       </div>
@@ -188,6 +194,8 @@ export default function CatalogClient({ products, filters }) {
   }, []);
 
   const minCenaHurt = (p) => Math.min(...p.warianty.map(w => w.cenaHurtNum));
+
+  const isBooleanActive = (field) => !!selected[field];
 
   const visible = useMemo(() => {
     let list = products.filter(p => {
@@ -238,118 +246,123 @@ export default function CatalogClient({ products, filters }) {
         </div>
       </div>
 
-      <div className={s.filterSection}>
-        <button
-          className={s.filterToggleBtn}
-          onClick={() => setFiltersOpen(o => !o)}
-          aria-expanded={filtersOpen}
-        >
-          <span>Filtry i wyszukiwanie</span>
-          {activeFiltersCount > 0 && (
-            <span className={s.filterBadge}>{activeFiltersCount}</span>
-          )}
-          <span className={`${s.filterToggleArrow} ${filtersOpen ? s.filterToggleArrowOpen : ''}`}>▾</span>
-        </button>
+      <div className={s.catalogLayout}>
+        <aside className={s.filterSection} aria-label="Filtry">
+          <button
+            className={s.filterToggleBtn}
+            onClick={() => setFiltersOpen(o => !o)}
+            aria-expanded={filtersOpen}
+            aria-controls="filter-panel"
+          >
+            <span>Filtry i wyszukiwanie</span>
+            {activeFiltersCount > 0 && (
+              <span className={s.filterBadge}>{activeFiltersCount}</span>
+            )}
+            <span className={`${s.filterToggleArrow} ${filtersOpen ? s.filterToggleArrowOpen : ''}`}>▾</span>
+          </button>
 
-        <div className={`${s.filterBar} ${filtersOpen ? s.filterBarOpen : ''}`}>
-          <div className={s.filterBarHeader}>
-            <button
-              className={s.filterClearBtn}
-              onClick={clearFilters}
-              disabled={activeFiltersCount === 0}
-              tabIndex={activeFiltersCount === 0 ? -1 : 0}
-            >
-              Wyczyść filtry
-            </button>
-          </div>
-
-          {selectFilters.map(f => (
-            <div key={f.field} className={s.filterGroup}>
-              <span className={s.filterLabel}>{f.label}</span>
-              <div className={s.pills}>
-                {f.values.map(value => {
-                  const active = (selected[f.field] || []).includes(value);
-                  return (
-                    <button
-                      key={value}
-                      className={`${s.pill} ${active ? s.active : ''}`}
-                      onClick={() => toggleSelectValue(f.field, value)}
-                    >
-                      {value}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-
-          {selectFilters.length > 0 && booleanFilters.length > 0 && <div className={s.filterDivider} />}
-
-          {booleanFilters.length > 0 && (
-            <div className={s.toggleGroup}>
-              <span className={s.filterLabel}>Cechy</span>
-              <div className={s.toggles}>
-                {booleanFilters.map(f => (
-                  <label key={f.field} className={s.toggleLabel}>
-                    <input
-                      type="checkbox"
-                      checked={!!selected[f.field]}
-                      onChange={() => toggleBoolean(f.field)}
-                    />
-                    {f.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(selectFilters.length > 0 || booleanFilters.length > 0) && <div className={s.filterDivider} />}
-
-          <div className={s.searchGroup}>
-            <label className={s.filterLabel} htmlFor="search">Szukaj</label>
-            <input
-              id="search"
-              className={s.searchInput}
-              type="search"
-              placeholder="Szukaj produktu…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <main className={s.catalog}>
-        <div className={s.sortBar}>
-          <span className={s.sortMeta}>{visible.length} z {products.length} produktów</span>
-          <div className={s.sortOptions}>
-            <span className={s.sortLabel}>Sortuj:</span>
-            {SORT_OPTIONS.map(opt => (
+          <div id="filter-panel" className={`${s.filterPanel} ${filtersOpen ? s.filterPanelOpen : ''}`}>
+            <div className={s.filterPanelHeader}>
+              <span className={s.filterPanelTitle}>Filtry</span>
               <button
-                key={opt}
-                className={`${s.sortBtn} ${sortBy === opt ? s.sortBtnActive : ''}`}
-                onClick={() => setSortBy(opt)}
+                className={s.filterClearBtn}
+                onClick={clearFilters}
+                disabled={activeFiltersCount === 0}
+                tabIndex={activeFiltersCount === 0 ? -1 : 0}
               >
-                {opt}
+                Wyczyść
               </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={s.grid}>
-          {visible.length === 0 ? (
-            <div className={s.empty}>
-              <p className={s.emptyIcon}>🔍</p>
-              <p className={s.emptyText}>Brak produktów</p>
-              <p className={s.emptySub}>Zmień kryteria filtrowania</p>
             </div>
-          ) : (
-            visible.map(product => (
-              <ProductCard key={product.id} product={product} onAddToCart={openModal} onZoom={(src, alt) => setLightbox({ src, alt })}/>
-            ))
-          )}
-        </div>
-      </main>
+
+            <div className={s.filterGroup}>
+              <label className={s.filterLabel} htmlFor="search">Szukaj</label>
+              <input
+                id="search"
+                className={s.searchInput}
+                type="search"
+                placeholder="Nazwa, kolor, linia…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+
+            {selectFilters.map(f => (
+              <div key={f.field} className={s.filterGroup}>
+                <span className={s.filterLabel}>{f.label}</span>
+                <div className={s.pills}>
+                  {f.values.map(value => {
+                    const active = (selected[f.field] || []).includes(value);
+                    return (
+                      <button
+                        key={value}
+                        className={`${s.pill} ${active ? s.active : ''}`}
+                        onClick={() => toggleSelectValue(f.field, value)}
+                        aria-pressed={active}
+                      >
+                        {value}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {booleanFilters.length > 0 && (
+              <div className={s.filterGroup}>
+                <span className={s.filterLabel}>Cechy</span>
+                <div className={s.pills}>
+                  {booleanFilters.map(f => (
+                    <button
+                      key={f.field}
+                      className={`${s.pill} ${isBooleanActive(f.field) ? s.active : ''}`}
+                      onClick={() => toggleBoolean(f.field)}
+                      aria-pressed={isBooleanActive(f.field)}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        <main className={s.catalog}>
+          <div className={s.sortBar}>
+            <span className={s.sortMeta}>{visible.length} z {products.length} produktów</span>
+            <div className={s.sortOptions}>
+              <span className={s.sortLabel}>Sortuj:</span>
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt}
+                  className={`${s.sortBtn} ${sortBy === opt ? s.sortBtnActive : ''}`}
+                  onClick={() => setSortBy(opt)}
+                  aria-pressed={sortBy === opt}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={s.grid}>
+            {visible.length === 0 ? (
+              <div className={s.empty}>
+                <p className={s.emptyIcon}>🔍</p>
+                <p className={s.emptyText}>Brak produktów</p>
+                <p className={s.emptySub}>Zmień kryteria filtrowania</p>
+                {activeFiltersCount > 0 && (
+                  <button className={s.filterClearBtn} onClick={clearFilters}>Wyczyść filtry</button>
+                )}
+              </div>
+            ) : (
+              visible.map(product => (
+                <ProductCard key={product.id} product={product} onAddToCart={openModal} onZoom={(src, alt) => setLightbox({ src, alt })}/>
+              ))
+            )}
+          </div>
+        </main>
+      </div>
 
       <SiteFooter />
 

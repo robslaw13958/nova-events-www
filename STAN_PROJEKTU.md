@@ -105,6 +105,9 @@ arkusza — bez zmian w kodzie przy nowej kolumnie.
    Ten warunek powtarzalności (a nie tylko limit liczby wartości) jest kluczowy: chroni przed
    tym, żeby np. pole `Opis` w małym katalogu (gdzie każdy produkt ma unikalny opis) przypadkiem
    stało się filtrem — sprawdzone symulacją na przykładowych danych.
+3a. Kolumny opisowe `Opis` i `Wymiary` są wykluczone z filtrów na stałe (`EXCLUDED_FIELDS`
+   w `autoFilters.js`), a kolumna, której którakolwiek wartość ma > 24 znaki, nie zostanie
+   filtrem — długie pigułki (np. 10 wariantów wymiarów) rozsadzały panel filtrów.
 4. W pozostałych przypadkach (wolny tekst, zbyt duża różnorodność, brak powtórzeń) kolumna jest
    pomijana jako filtr — nadal jest jednak przeszukiwana przez pole wyszukiwania (`Szukaj`
    teraz przeszukuje nazwę + wartości wszystkich zebranych pól, nie tylko `Typ`/`Linia` jak
