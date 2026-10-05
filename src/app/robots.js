@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://novaevents.pl';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export default function robots() {
   return {

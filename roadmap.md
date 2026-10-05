@@ -23,11 +23,14 @@ Sprzedaż traktujemy standardowo, wynajem jest ustalany indywidualnie.
   - Można wysłać klientowi link do gotowego zestawienia („tylko krzesła PREMIUM”).
 
 ### Podgląd linku i SEO
-- [ ] Obrazki i opisy Open Graph dla stron produktów, żeby link wysłany na WhatsAppie
+- [x] Obrazki i opisy Open Graph dla stron produktów, żeby link wysłany na WhatsAppie
       lub Messengerze pokazywał zdjęcie, nazwę i cenę. Dla tego katalogu to ważniejsze niż SEO.
-- [ ] Dane strukturalne `Product` (JSON-LD): cena i dostępność w wynikach Google.
-- [ ] Ustawić `NEXT_PUBLIC_SITE_URL` w ustawieniach projektu na Vercelu
-      (używane przez `sitemap.js` / `robots.js`, teraz jest tam adres zastępczy).
+- [x] Dane strukturalne `Product` (JSON-LD): cena i dostępność w wynikach Google.
+- [ ] **(poza kodem)** Gdy strona dostanie własną domenę: ustawić `NEXT_PUBLIC_SITE_URL`
+      na Vercelu (np. `https://novaevents.pl`). Do tego czasu adres jest brany automatycznie
+      z adresu produkcyjnego projektu na Vercelu (`src/lib/siteUrl.js`).
+- [ ] Po wdrożeniu sprawdzić podgląd linku w https://developers.facebook.com/tools/debug/
+      (ten sam mechanizm co WhatsApp i Messenger).
 
 ### Zdjęcia z Google Drive: uodpornić, nie zmieniać
 - [ ] **(poza kodem)** Udostępnić cały folder ze zdjęciami jako „Każda osoba mająca link”.

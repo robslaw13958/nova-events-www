@@ -1,4 +1,5 @@
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google';
+import { SITE_URL, OPEN_GRAPH_DEFAULTS } from '@/lib/siteUrl';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -16,9 +17,19 @@ const dmSans = DM_Sans({
   display: 'swap',
 });
 
+const SITE_TITLE = 'Nova Events — Wyposażenie Cateringowe';
+const SITE_DESCRIPTION = 'Profesjonalny katalog mebli i wyposażenia cateringowego. Stoły, krzesła, ławki — sprzedaż hurtowa i detaliczna.';
+
 export const metadata = {
-  title: 'Nova Events — Wyposażenie Cateringowe',
-  description: 'Profesjonalny katalog mebli i wyposażenia cateringowego. Stoły, krzesła, ławki — sprzedaż hurtowa i detaliczna.',
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    ...OPEN_GRAPH_DEFAULTS,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: '/',
+  },
 };
 
 export default function RootLayout({ children }) {

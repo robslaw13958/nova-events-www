@@ -1,6 +1,5 @@
+import { SITE_URL } from '@/lib/siteUrl';
 import { getProducts } from '@/lib/getProducts';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://novaevents.pl';
 
 export default async function sitemap() {
   const products = await getProducts();
