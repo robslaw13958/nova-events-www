@@ -85,8 +85,9 @@ export default async function StatusPage() {
 
       <main className={st.content}>
         <p className={st.lead}>
-          Stan na {formatTime(new Date())}. Dane z arkusza odświeżają się co około 5 minut —
-          po poprawkach w arkuszu lub na Dysku wróć tu za chwilę.
+          Stan na {formatTime(new Date())}. Strona pobiera arkusz kilkanaście sekund po każdej
+          zmianie (i dodatkowo co godzinę) — po poprawkach wróć tu za chwilę i odśwież stronę.
+          Zmiana samego pliku na Dysku nie odświeża strony — użyj menu „Strona WWW” w arkuszu.
         </p>
 
         <div className={st.cards}>

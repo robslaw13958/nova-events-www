@@ -30,9 +30,11 @@ z opublikowanego arkusza Google Sheets (eksport CSV), bez własnego backendu ani
 ## 3. Co działa dobrze
 
 - Server/Client Component rozdzielone tam, gdzie to ma sens — dane pobierane i cache'owane
-  po stronie serwera (`revalidate: 300`) zarówno dla katalogu, jak i strony produktu.
+  po stronie serwera pod tagiem `catalog` — odświeżane na żądanie przez skrypt w arkuszu
+  (`scripts/arkusz/odswiezanie-strony.gs` → `/api/revalidate`), zapasowo co godzinę.
 - Sensowny model danych: grupowanie wierszy arkusza w produkty z wariantami kolorystycznymi.
-- Obsługa awaryjna (fallback produkty), gdy arkusz jest niedostępny — apka się nie wywala.
+- Gdy arkusz jest niedostępny: na produkcji Vercel serwuje ostatnią dobrą wersję stron
+  (błąd przerywa ich odświeżenie), lokalnie działają produkty zastępcze; `/status` to pokazuje.
 - Koszyk z progiem cen hurt/detal, trwały (localStorage) przez `zustand/persist`.
 - Anty-FOUC dla motywu (inline script w `<head>` przed hydratacją).
 - Responsywność (osobne akcje mobile/desktop na kartach produktów), dostępność podstawowa (aria-label, obsługa Escape w modalach/lightboxie).

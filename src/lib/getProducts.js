@@ -145,11 +145,19 @@ function groupProducts(rows) {
 }
 
 // ─── Główna funkcja eksportowana ──────────────────────────────────────────────
+// Dane z arkusza są w cache Vercela pod tagiem CATALOG_TAG. Skrypt w arkuszu
+// (scripts/arkusz/odswiezanie-strony.gs) po każdej zmianie woła /api/revalidate,
+// a odświeżanie co godzinę to tylko zabezpieczenie, gdyby wyzwalacz nie zadziałał.
+export const CATALOG_TAG = 'catalog';
+const SAFETY_REVALIDATE_SECONDS = 3600;
+
 // Zwraca też źródło danych — strona /status pokazuje, gdy arkusz jest niedostępny
 // i katalog działa na danych zastępczych.
 export async function loadCatalog() {
   try {
-    const res = await fetch(SHEETS_CSV_URL, { next: { revalidate: 300 } });
+    const res = await fetch(SHEETS_CSV_URL, {
+      next: { tags: [CATALOG_TAG], revalidate: SAFETY_REVALIDATE_SECONDS },
+    });
     if (!res.ok) throw new Error(`Sheets HTTP ${res.status}`);
     const text = await res.text();
     const rows = parseCsv(text);
@@ -160,8 +168,15 @@ export async function loadCatalog() {
   }
 }
 
+// Na produkcji błąd arkusza przerywa generowanie strony zamiast pokazać dane zastępcze:
+// Vercel serwuje wtedy ostatnią dobrą wersję i ponawia próbę przy kolejnej wizycie,
+// a nieudany build zostawia poprzedni deploy. Lokalnie (next dev) dane zastępcze zostają.
 export async function getProducts() {
-  return (await loadCatalog()).products;
+  const { products, source, error } = await loadCatalog();
+  if (source !== 'sheet' && process.env.NODE_ENV === 'production') {
+    throw new Error(`Arkusz niedostępny, strona nie zostanie odświeżona: ${error}`);
+  }
+  return products;
 }
 
 // ─── Dane zastępcze (gdy arkusz niedostępny) ───────────────────────────────────

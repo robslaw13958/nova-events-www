@@ -42,6 +42,15 @@ Sprzedaż traktujemy standardowo, wynajem jest ustalany indywidualnie.
 - [x] Ukryta strona `/status` dla osoby edytującej arkusz: produkty bez zdjęcia
       lub z niedostępnym zdjęciem, oraz informacja, czy strona działa na danych zapasowych.
 
+### Odświeżanie danych tylko po zmianie w arkuszu
+- [x] Dane z arkusza w cache pod tagiem `catalog`, endpoint `/api/revalidate` z tokenem,
+      skrypt do arkusza `scripts/arkusz/odswiezanie-strony.gs`, zapasowe odświeżenie co godzinę.
+- [x] Błąd arkusza na produkcji nie podmienia katalogu na dane zastępcze.
+- [ ] **(poza kodem)** Ustawić `REVALIDATE_SECRET` na Vercelu (Settings → Environment
+      Variables, środowisko Production) i zrobić redeploy.
+- [ ] **(poza kodem)** Wkleić skrypt w arkuszu i uruchomić `zainstaluj` (instrukcja w pliku).
+- [ ] Po instalacji sprawdzić: zmiana w arkuszu → po ~15 s widoczna na stronie głównej.
+
 ## Na później (razem ze zmianami w arkuszu)
 
 ### Porządek w arkuszu
