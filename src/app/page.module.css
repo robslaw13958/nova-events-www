@@ -544,6 +544,22 @@
   color: var(--text-dim);
 }
 
+.copyLinkBtn {
+  margin-left: 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted var(--gold-border);
+  padding: 0;
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.copyLinkBtn:hover {
+  border-bottom-color: var(--gold);
+}
+
 .sortOptions {
   display: flex;
   align-items: center;

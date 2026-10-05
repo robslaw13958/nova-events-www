@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useCart, HURT_PROG, cenaItem } from '@/lib/cartStore';
 import { formatPrice } from '@/lib/format';
 import { CONTACT, mailtoHref, phoneHref, whatsappHref } from '@/lib/contact';
-import { ZAPYTANIE_TEMAT, buildZapytanie, zapytanieMailBody, copyToClipboard } from '@/lib/zapytanie';
+import { ZAPYTANIE_TEMAT, buildZapytanie, zapytanieMailBody } from '@/lib/zapytanie';
+import { copyToClipboard } from '@/lib/clipboard';
 import s from './cart.module.css';
 
 /* ─── Cart Icon (dla headera) ────────────────────────────────────────────── */

@@ -18,7 +18,7 @@ Sprzedaż traktujemy standardowo, wynajem jest ustalany indywidualnie.
 - [ ] Prawdziwy adres e-mail w `src/lib/contact.js` (obecnie przykładowy `kontakt@novaevents.pl`).
 
 ### Filtry zapisywane w adresie strony
-- [ ] Zapis filtrów i sortowania w adresie, np. `/?Linia=PREMIUM&Typ=krzesło`.
+- [x] Zapis filtrów i sortowania w adresie, np. `/?Linia=PREMIUM&Typ=krzesło`.
   - Po powrocie z karty produktu filtry się nie resetują.
   - Można wysłać klientowi link do gotowego zestawienia („tylko krzesła PREMIUM”).
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AddToCartModal } from '@/components/Cart';
@@ -10,6 +10,8 @@ import SiteFooter from '@/components/SiteFooter';
 import { dostepnoscStatus } from '@/lib/dostepnosc';
 import { productMatchesFilter, matchesSearch } from '@/lib/autoFilters';
 import { opisExcerpt } from '@/lib/opis';
+import { SORT_OPTIONS, DEFAULT_SORT, buildCatalogQuery, rememberCatalogQuery } from '@/lib/catalogParams';
+import { copyToClipboard } from '@/lib/clipboard';
 import s from './page.module.css';
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -163,11 +165,16 @@ function ProductCard({ product, onAddToCart, onZoom }) {
 }
 
 /* ─── Main client component ──────────────────────────────────────────────── */
-export default function CatalogClient({ products, filters }) {
+// `initialState` przychodzi z adresu strony (CatalogFromUrl). Bez niego (statyczny
+// fallback renderowany na serwerze) komponent nie dotyka adresu.
+export default function CatalogClient({ products, filters, initialState }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState({}); // { [field]: string[] | true }
-  const [sortBy, setSortBy] = useState('domyślny');
+  const [search, setSearch] = useState(initialState?.search ?? '');
+  const [selected, setSelected] = useState(initialState?.selected ?? {}); // { [field]: string[] | true }
+  const [sortBy, setSortBy] = useState(initialState?.sortBy ?? DEFAULT_SORT);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const linkCopiedTimer = useRef(null);
+  const syncUrl = !!initialState;
   const [modal, setModal] = useState(null);
   const [lightbox, setLightbox] = useState(null);
 
@@ -197,6 +204,29 @@ export default function CatalogClient({ products, filters }) {
 
   const isBooleanActive = (field) => !!selected[field];
 
+  const query = useMemo(
+    () => buildCatalogQuery({ selected, search, sortBy }, filters),
+    [selected, search, sortBy, filters]
+  );
+
+  // replaceState zamiast pushState: „wstecz” nie przechodzi przez każde kliknięcie filtra
+  useEffect(() => {
+    if (!syncUrl) return;
+    const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+    rememberCatalogQuery(query);
+  }, [query, syncUrl]);
+
+  useEffect(() => () => clearTimeout(linkCopiedTimer.current), []);
+
+  const copyLink = async () => {
+    const ok = await copyToClipboard(window.location.href);
+    if (!ok) return;
+    setLinkCopied(true);
+    clearTimeout(linkCopiedTimer.current);
+    linkCopiedTimer.current = setTimeout(() => setLinkCopied(false), 2500);
+  };
+
   const visible = useMemo(() => {
     let list = products.filter(p => {
       if (!matchesSearch(p, search)) return false;
@@ -224,8 +254,6 @@ export default function CatalogClient({ products, filters }) {
 
   const selectFilters = filters.filter(f => f.type === 'select');
   const booleanFilters = filters.filter(f => f.type === 'boolean');
-
-  const SORT_OPTIONS = ['domyślny', 'cena ↑', 'cena ↓'];
 
   return (
     <div className={s.wrapper}>
@@ -329,17 +357,24 @@ export default function CatalogClient({ products, filters }) {
 
         <main className={s.catalog}>
           <div className={s.sortBar}>
-            <span className={s.sortMeta}>{visible.length} z {products.length} produktów</span>
+            <span className={s.sortMeta}>
+              {visible.length} z {products.length} produktów
+              {activeFiltersCount > 0 && (
+                <button className={s.copyLinkBtn} onClick={copyLink}>
+                  {linkCopied ? 'Link skopiowany ✓' : 'Kopiuj link do zestawienia'}
+                </button>
+              )}
+            </span>
             <div className={s.sortOptions}>
               <span className={s.sortLabel}>Sortuj:</span>
-              {SORT_OPTIONS.map(opt => (
+              {SORT_OPTIONS.map(({ label }) => (
                 <button
-                  key={opt}
-                  className={`${s.sortBtn} ${sortBy === opt ? s.sortBtnActive : ''}`}
-                  onClick={() => setSortBy(opt)}
-                  aria-pressed={sortBy === opt}
+                  key={label}
+                  className={`${s.sortBtn} ${sortBy === label ? s.sortBtnActive : ''}`}
+                  onClick={() => setSortBy(label)}
+                  aria-pressed={sortBy === label}
                 >
-                  {opt}
+                  {label}
                 </button>
               ))}
             </div>

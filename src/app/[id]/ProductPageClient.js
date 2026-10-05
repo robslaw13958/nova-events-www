@@ -9,6 +9,7 @@ import { Lightbox, ZoomIcon } from '@/components/Lightbox';
 import { useCart, HURT_PROG } from '@/lib/cartStore';
 import { formatPrice } from '@/lib/format';
 import { isOpisNote, opisExcerpt } from '@/lib/opis';
+import { useCatalogHref } from '@/lib/catalogParams';
 import ProductDescription from './ProductDescription';
 import VariantTable, { DostepnoscDot } from './VariantTable';
 import s from './product.module.css';
@@ -243,6 +244,7 @@ export default function ProductPageClient({ product, related = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightbox, setLightbox] = useState(null);
   const buyRef = useRef(null);
+  const catalogHref = useCatalogHref();
 
   const wariant = product.warianty[activeIndex];
   const photos = useMemo(() => collectPhotos(product.warianty), [product.warianty]);
@@ -264,7 +266,7 @@ export default function ProductPageClient({ product, related = [] }) {
 
       <main className={s.main}>
         <nav className={s.breadcrumb} aria-label="Ścieżka">
-          <Link href="/">Katalog</Link>
+          <Link href={catalogHref}>Katalog</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{product.name}</span>
         </nav>
