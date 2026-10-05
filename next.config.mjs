@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
-  allowedDevOrigins: ['192.168.1.13'],
+  // Cała podsieć domowa — router przydziela adres przez DHCP, więc pojedynczy IP się dezaktualizuje
+  allowedDevOrigins: ['192.168.1.*'],
   images: {
     remotePatterns: [
       {
