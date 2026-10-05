@@ -745,18 +745,6 @@
   color: var(--gold);
 }
 
-/* Zajawka opisu — zawsze max 3 linie, żeby przyciski nie wypadały poza kartę */
-.overlayDesc {
-  font-size: 12px;
-  color: var(--text-mid);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .overlayDostepnosc {
   font-size: 11px;
   letter-spacing: 0.08em;

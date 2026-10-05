@@ -10,7 +10,6 @@ import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import { dostepnoscStatus } from '@/lib/dostepnosc';
 import { productMatchesFilter, matchesSearch } from '@/lib/autoFilters';
-import { opisExcerpt } from '@/lib/opis';
 import { SORT_OPTIONS, DEFAULT_SORT, buildCatalogQuery, rememberCatalogQuery } from '@/lib/catalogParams';
 import { copyToClipboard } from '@/lib/clipboard';
 import s from './page.module.css';
@@ -53,7 +52,6 @@ function ProductCard({ product, onAddToCart, onZoom }) {
   const wariant = product.warianty[activeVariant];
   const href = `/${encodeURIComponent(product.id)}`;
   const facts = overlayFacts(product);
-  const excerpt = useMemo(() => opisExcerpt(product.opis, 140), [product.opis]);
   const showSwatches = product.warianty.length > 1 || !!wariant.kolor;
   const [imageFailed, onImageError] = useImageError(wariant.zdjecie);
 
@@ -82,7 +80,6 @@ function ProductCard({ product, onAddToCart, onZoom }) {
         <div className={s.cardOverlay}>
           <p className={s.overlayTitle}>{product.name}</p>
           {facts && <p className={s.overlayFacts}>{facts}</p>}
-          {excerpt && <p className={s.overlayDesc}>{excerpt}</p>}
           {wariant.dostepnosc && (
             <p className={s.overlayDostepnosc}>
               <span className={`${s.dostepnosc} ${dostepnoscClass(wariant.dostepnosc)}`} />
